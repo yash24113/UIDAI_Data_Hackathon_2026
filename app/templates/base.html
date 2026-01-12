@@ -15,30 +15,139 @@
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <style>
         :root {
-            --sidebar-width: 250px;
+            --sidebar-width: 280px;
             --primary-color: #0d6efd;
-            --dark-color: #212529;
-            --light-bg: #f4f6f9;
+            --secondary-color: #6c757d;
+            --dark-color: #1a1e21;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         #loader-wrapper {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #fff;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
+            z-index: 10000;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #loader-wrapper.fade-out {
             opacity: 0;
-            pointer-events: none;
+            visibility: hidden;
+            transform: scale(1.1);
+        }
+
+        /* Custom Data Analysis Loader Styling */
+        .analysis-loader {
+            position: relative;
+            width: 120px;
+            height: 100px;
+            margin-bottom: 2rem;
+        }
+
+        .loader-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 60px;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .loader-bar {
+            width: 12px;
+            background: var(--primary-color);
+            border-radius: 4px 4px 0 0;
+            animation: pulse-height 1.2s ease-in-out infinite;
+            opacity: 0.7;
+        }
+
+        .loader-bar:nth-child(1) {
+            height: 40%;
+            animation-delay: 0.1s;
+        }
+
+        .loader-bar:nth-child(2) {
+            height: 75%;
+            animation-delay: 0.2s;
+        }
+
+        .loader-bar:nth-child(3) {
+            height: 50%;
+            animation-delay: 0.3s;
+        }
+
+        .loader-bar:nth-child(4) {
+            height: 90%;
+            animation-delay: 0.4s;
+        }
+
+        .loader-bar:nth-child(5) {
+            height: 60%;
+            animation-delay: 0.5s;
+        }
+
+        .loader-search {
+            position: absolute;
+            top: -10px;
+            left: 0;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            animation: scan-chart 2.5s linear infinite;
+            z-index: 2;
+        }
+
+        @keyframes pulse-height {
+
+            0%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(0.7);
+            }
+        }
+
+        @keyframes scan-chart {
+            0% {
+                left: -20px;
+                transform: rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            45% {
+                left: 100px;
+                transform: rotate(15deg);
+            }
+
+            55% {
+                left: 100px;
+                transform: rotate(15deg);
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                left: -20px;
+                transform: rotate(0deg);
+                opacity: 0;
+            }
         }
 
         body {
@@ -143,7 +252,14 @@
 
         .navbar {
             padding: 0.75rem 1.5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .container-fluid {
+            max-width: 1600px;
+            margin: 0 auto;
         }
 
         .nav-filters {
@@ -202,18 +318,23 @@
 </head>
 
 <body>
-    <!-- Preloader -->
     <div id="loader-wrapper">
         <div class="text-center">
-            <lottie-player src="https://lottie.host/80404414-878f-4fcc-9df5-115f57398b1a/d9Z6vW1S4N.json"
-                background="transparent" speed="1" style="width: 300px; height: 300px;" loop autoplay></lottie-player>
-            <!-- Backup Spinner if Lottie fails -->
-            <div class="spinner-border text-primary d-block mx-auto mb-3" role="status" id="fallback-spinner"
-                style="display: none !important;">
-                <span class="visually-hidden">Loading...</span>
+            <div class="analysis-loader">
+                <i class="fas fa-search loader-search"></i>
+                <div class="loader-chart">
+                    <div class="loader-bar"></div>
+                    <div class="loader-bar"></div>
+                    <div class="loader-bar"></div>
+                    <div class="loader-bar"></div>
+                    <div class="loader-bar"></div>
+                </div>
             </div>
-            <h5 class="fw-bold text-primary mt-3">Synthesizing UIDAI Data...</h5>
-            <p class="text-muted small">Actionable Insights for Governance</p>
+            <h4 class="fw-bold text-primary mt-4 mb-2">Analyzing UIDAI Data...</h4>
+            <div class="d-flex align-items-center justify-content-center gap-2">
+                <div class="spinner-grow spinner-grow-sm text-primary" role="status"></div>
+                <span class="text-muted fw-medium">Synthesizing insights for 2026</span>
+            </div>
         </div>
     </div>
 
