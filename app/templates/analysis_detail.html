@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block filters %}
+<div class="nav-filters w-100 w-sm-auto">
+    <select class="form-select form-select-sm" id="stateFilter">
+        <option value="All">All States</option>
+        {% for state in states %}
+        <option value="{{ state }}">{{ state }}</option>
+        {% endfor %}
+    </select>
+    <select class="form-select form-select-sm" id="districtFilter">
+        <option value="All">All Districts</option>
+    </select>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4 g-3">
+    <div class="col-12 col-lg-7">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active">Idea {{ idea_id }}</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0">{{ title }}</h2>
+    </div>
+    <div class="col-12 col-lg-5 d-flex gap-2 justify-content-lg-end">
+        <a href="#" id="exportCsvBtn" class="btn btn-outline-success flex-fill flex-lg-grow-0">
+            <i class="fas fa-file-csv me-1"></i> CSV
+        </a>
+        <a href="#" id="exportPdfBtn" class="btn btn-danger flex-fill flex-lg-grow-0">
+            <i class="fas fa-file-pdf me-1"></i> PDF Report
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Main Chart -->
+    <div class="col-12 col-xl-8">
+        <div class="card shadow-sm border-0 h-100 p-2 p-md-3">
+            <div class="card-body">
+                <h5 class="card-title text-muted mb-4 small text-uppercase fw-bold">Statistical Visualization</h5>
+                <div style="height: 400px; position: relative;">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="col-12 col-xl-4">
+        <div class="row g-4 h-100">
+            <div class="col-12">
+                <div class="card bg-white shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-danger fw-bold small mb-2"><i
+                                    class="fas fa-exclamation-circle me-1"></i> Problem</h6>
+                            <p id="problemText" class="text-dark small lh-base">Loading...</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-primary fw-bold small mb-2"><i
+                                    class="fas fa-lightbulb me-1"></i> Key Insight</h6>
+                            <p id="insightText" class="fw-bold text-dark small">Loading...</p>
+                        </div>
+
+                        <div class="mb-0">
+                            <h6 class="text-uppercase text-success fw-bold small mb-2"><i
+                                    class="fas fa-check-circle me-1"></i> Government Recommended Solution</h6>
+                            <p id="solutionText" class="text-dark small lh-base">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Preview -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold">Tabular Data Preview (Top 15)</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="dataTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="px-4 py-3 border-0">Region / Category</th>
+                                <th class="px-4 py-3 border-0 text-end">Metric Value</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const ideaId = parseInt("{{ idea_id }}");
+    let myChart = null;
+
+    function initChart(labels, data) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Count / Ratio',
+                    data: data,
+                    backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { ticks: { font: { size: 10 } } },
+                    y: { beginAtZero: true, grid: { drawBorder: false } }
+                }
+            }
+        });
+    }
+
+    function loadData() {
+        showLoader();
+        const state = document.getElementById('stateFilter').value;
+        const district = document.getElementById('districtFilter').value;
+        const params = `?state=${state}&district=${district}`;
+
+        // Update Export Links
+        document.getElementById('exportPdfBtn').href = `/export/idea/${ideaId}${params}`;
+        document.getElementById('exportCsvBtn').href = `/export/idea/csv/${ideaId}${params}`;
+
+        fetch(`/api/data/idea/${ideaId}${params}`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('problemText').innerText = data.problem;
+                document.getElementById('insightText').innerText = data.insight;
+                document.getElementById('solutionText').innerText = data.solution;
+
+                initChart(data.labels, data.data);
+
+                const tbody = document.querySelector('#dataTable tbody');
+                tbody.innerHTML = '';
+
+                const limit = Math.min(data.labels.length, 15);
+                for (let i = 0; i < limit; i++) {
+                    const row = `<tr>
+                        <td class="px-4 py-3 border-bottom-0 fw-medium">${data.labels[i]}</td>
+                        <td class="px-4 py-3 border-bottom-0 text-end fw-bold text-primary">${data.data[i].toLocaleString()}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                }
+                hideLoader();
+            })
+            .catch(() => hideLoader());
+    }
+
+    // Filter Logic
+    document.getElementById('stateFilter').addEventListener('change', function () {
+        const state = this.value;
+        const districtSelect = document.getElementById('districtFilter');
+        districtSelect.innerHTML = '<option value="All">Loading...</option>';
+
+        if (state !== "All") {
+            fetch(`/api/districts/${state}`).then(r => r.json()).then(data => {
+                districtSelect.innerHTML = '<option value="All">All Districts</option>';
+                data.forEach(d => {
+                    districtSelect.innerHTML += `<option value="${d}">${d}</option>`;
+                });
+                loadData();
+            });
+        } else {
+            districtSelect.innerHTML = '<option value="All">All Districts</option>';
+            loadData();
+        }
+    });
+
+    document.getElementById('districtFilter').addEventListener('change', loadData);
+
+    document.addEventListener("DOMContentLoaded", loadData);
+</script>
+{% endblock %}

@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block filters %}
+<div class="nav-filters d-flex gap-2">
+    <select class="form-select form-select-sm shadow-sm" id="stateFilter" style="min-width: 150px;">
+        <option value="All">Select State</option>
+        {% for state in states %}
+        <option value="{{ state }}">{{ state }}</option>
+        {% endfor %}
+    </select>
+    <select class="form-select form-select-sm shadow-sm" id="districtFilter" style="min-width: 150px;">
+        <option value="All">All Districts</option>
+    </select>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="overview" class="mb-5">
+    <div class="row g-3 g-md-4">
+        <div class="col-12 col-sm-6 col-lg-4">
+            <a href="/analysis/category/enrolment" class="text-decoration-none">
+                <div class="card stat-card shadow-sm border-0 bg-primary text-white p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-0 text-white-50 small fw-bold">TOTAL ENROLMENT</p>
+                            <h2 id="totalEnrolment" class="mb-0">...</h2>
+                        </div>
+                        <i class="fas fa-user-plus fs-1 opacity-25"></i>
+                    </div>
+                    <div class="mt-3 small text-white-50 border-top pt-2 border-white border-opacity-10">
+                        View Detailed Analysis <i class="fas fa-chevron-right ms-1 small"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-4">
+            <a href="/analysis/category/demographic" class="text-decoration-none">
+                <div class="card stat-card shadow-sm border-0 bg-success text-white p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-0 text-white-50 small fw-bold">DEMOGRAPHIC UPDATES</p>
+                            <h2 id="totalDemo" class="mb-0">...</h2>
+                        </div>
+                        <i class="fas fa-sync fs-1 opacity-25"></i>
+                    </div>
+                    <div class="mt-3 small text-white-50 border-top pt-2 border-white border-opacity-10">
+                        View Detailed Analysis <i class="fas fa-chevron-right ms-1 small"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-lg-4">
+            <a href="/analysis/category/biometric" class="text-decoration-none">
+                <div class="card stat-card shadow-sm border-0 bg-warning text-dark p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-0 text-black-50 small fw-bold">BIOMETRIC UPDATES</p>
+                            <h2 id="totalBio" class="mb-0">...</h2>
+                        </div>
+                        <i class="fas fa-fingerprint fs-1 opacity-25"></i>
+                    </div>
+                    <div class="mt-3 small text-black-50 border-top pt-2 border-dark border-opacity-10">
+                        View Detailed Analysis <i class="fas fa-chevron-right ms-1 small"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div id="ideas">
+    <div class="d-flex justify-content-between align-items-end mb-4 border-bottom pb-2">
+        <h4 class="mb-0 fw-bold">Actionable Insights</h4>
+        <span class="text-muted small">Updated Real-time</span>
+    </div>
+
+    <div class="row g-3 g-md-4">
+        {% for i in range(1, 11) %}
+        {% set col_class = "col-12 col-md-6" %}
+        {% if i == 10 %}{% set col_class = "col-12" %}{% endif %}
+        <div class="{{ col_class }}">
+            <div class="card shadow-sm border-0 h-100">
+                <div
+                    class="card-header bg-white border-bottom-0 py-3 d-flex justify-content-between align-items-center">
+                    <span class="badge bg-light text-primary border me-2">Idea {{ i }}</span>
+                    <a href="/analysis/idea/{{ i }}"
+                        class="btn btn-sm btn-link text-decoration-none fw-bold p-0">EXPLORE <i
+                            class="fas fa-arrow-right small ms-1"></i></a>
+                </div>
+                <div class="card-body pt-0">
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="chart{{ i }}"></canvas>
+                    </div>
+                    <div class="mt-3 p-2 bg-light rounded shadow-inner">
+                        <p class="text-dark mb-0 small" style="font-size: 0.75rem;"><i
+                                class="fas fa-info-circle text-primary me-1"></i> <span id="desc{{ i }}">Loading
+                                insight...</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let charts = {};
+
+    function initChart(id, type, label, bgColor) {
+        const ctx = document.getElementById(id).getContext('2d');
+        if (charts[id]) charts[id].destroy();
+
+        charts[id] = new Chart(ctx, {
+            type: type,
+            data: {
+                labels: [],
+                datasets: [{
+                    label: label,
+                    data: [],
+                    backgroundColor: bgColor,
+                    borderColor: Array.isArray(bgColor) ? bgColor.map(c => c.replace('0.6', '1')) : bgColor.replace('0.6', '1'),
+                    borderWidth: 1,
+                    borderRadius: type === 'bar' ? 4 : 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: type === 'pie' || type === 'doughnut' }
+                },
+                scales: {
+                    y: {
+                        display: type !== 'pie' && type !== 'doughnut',
+                        beginAtZero: true,
+                        grid: { drawBorder: false }
+                    },
+                    x: {
+                        display: type !== 'pie' && type !== 'doughnut',
+                        ticks: { font: { size: 9 } }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateChart(id, labels, data) {
+        if (!charts[id]) return;
+        charts[id].data.labels = labels;
+        charts[id].data.datasets[0].data = data;
+        charts[id].update();
+    }
+
+    function loadSummary() {
+        const state = document.getElementById('stateFilter').value;
+        const district = document.getElementById('districtFilter').value;
+        fetch(`/api/data/summary?state=${state}&district=${district}`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('totalEnrolment').innerText = data.total_enrolment.toLocaleString();
+                document.getElementById('totalDemo').innerText = data.total_demographic_updates.toLocaleString();
+                document.getElementById('totalBio').innerText = data.total_biometric_updates.toLocaleString();
+                // Removed premature hideLoader()
+            });
+    }
+
+    function loadCharts() {
+        showLoader();
+        const state = document.getElementById('stateFilter').value;
+        const district = document.getElementById('districtFilter').value;
+        const params = `?state=${state}&district=${district}`;
+
+        const chartConfigs = [
+            { id: 1, type: 'bar', label: 'Activity' },
+            { id: 2, type: 'bar', label: 'Recommended' },
+            { id: 3, type: 'line', label: '18+ Volume' },
+            { id: 4, type: 'bar', label: '0-5 Gap' },
+            { id: 5, type: 'bar', label: 'Anomalies' },
+            { id: 6, type: 'doughnut', label: 'Inclusion' },
+            { id: 7, type: 'pie', label: 'Language' },
+            { id: 8, type: 'bar', label: 'Faulty' },
+            { id: 9, type: 'line', label: 'Migration' },
+            { id: 10, type: 'bar', label: 'Footfall' }
+        ];
+
+        let loadedCount = 0;
+        chartConfigs.forEach(c => {
+            fetch(`/api/data/idea/${c.id}${params}`)
+                .then(r => r.json())
+                .then(data => {
+                    updateChart(`chart${c.id}`, data.labels, data.data);
+                    // Updated to show Govt Solution clearly
+                    const sol = data.solution.replace('GOVERNMENT SOLUTION:', '<strong>GOVT SOLUTION:</strong>');
+                    if (data.insight) document.getElementById(`desc${c.id}`).innerHTML = `<strong>Insight:</strong> ${data.insight}<br>${sol}`;
+
+                    loadedCount++;
+                    if (loadedCount === chartConfigs.length) hideLoader();
+                })
+                .catch(() => {
+                    loadedCount++;
+                    if (loadedCount === chartConfigs.length) hideLoader();
+                });
+        });
+    }
+
+    document.getElementById('stateFilter').addEventListener('change', function () {
+        const state = this.value;
+        const districtSelect = document.getElementById('districtFilter');
+        districtSelect.innerHTML = '<option value="All">Loading...</option>';
+
+        if (state !== "All") {
+            fetch(`/api/districts/${state}`)
+                .then(r => r.json())
+                .then(data => {
+                    districtSelect.innerHTML = '<option value="All">All Districts</option>';
+                    data.forEach(d => {
+                        districtSelect.innerHTML += `<option value="${d}">${d}</option>`;
+                    });
+                    loadSummary();
+                    loadCharts();
+                });
+        } else {
+            districtSelect.innerHTML = '<option value="All">All Districts</option>';
+            loadSummary();
+            loadCharts();
+        }
+    });
+
+    document.getElementById('districtFilter').addEventListener('change', () => {
+        loadSummary();
+        loadCharts();
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const colors = [
+            'rgba(13, 110, 253, 0.6)', 'rgba(25, 135, 84, 0.6)', 'rgba(108, 117, 125, 0.6)',
+            'rgba(220, 53, 69, 0.6)', 'rgba(13, 202, 240, 0.6)', 'rgba(102, 16, 242, 0.6)',
+            ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545', '#fd7e14'],
+            'rgba(255, 193, 7, 0.6)', 'rgba(13, 110, 253, 0.6)', 'rgba(25, 135, 84, 0.6)'
+        ];
+
+        const chartTypes = ['bar', 'bar', 'line', 'bar', 'bar', 'doughnut', 'pie', 'bar', 'line', 'bar'];
+
+        for (let i = 1; i <= 10; i++) {
+            initChart(`chart${i}`, chartTypes[i - 1], `Idea ${i}`, colors[i - 1]);
+        }
+
+        loadSummary();
+        loadCharts();
+    });
+</script>
+{% endblock %}

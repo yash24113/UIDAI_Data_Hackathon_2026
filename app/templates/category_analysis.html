@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block filters %}
+<div class="nav-filters d-flex gap-2">
+    <select class="form-select form-select-sm shadow-sm" id="stateFilter" style="min-width: 150px;">
+        <option value="All">Select State</option>
+        {% for state in states %}
+        <option value="{{ state }}">{{ state }}</option>
+        {% endfor %}
+    </select>
+    <select class="form-select form-select-sm shadow-sm" id="districtFilter" style="min-width: 150px;">
+        <option value="All">All Districts</option>
+    </select>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4 g-3">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active">{{ category }} Analysis</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0">{{ category }} Insights</h2>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Stats Panel -->
+    <div class="col-12 col-lg-4 order-lg-2">
+        <div class="card stat-card shadow-sm border-0 bg-primary text-white p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="mb-0 text-white-50 small fw-bold">TOTAL VOLUME</p>
+                    <h1 id="totalCount" class="mb-0 display-4 fw-bold">...</h1>
+                </div>
+                <i class="fas fa-chart-line fs-1 opacity-25"></i>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="mb-0 fw-bold">Quick Insights</h6>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush" id="statsList">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
+                        <span>Top Region</span>
+                        <span id="topRegion" class="badge bg-light text-primary border">Loading...</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
+                        <span>Active States</span>
+                        <span id="activeStates" class="badge bg-light text-primary border">Loading...</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top States Chart -->
+    <div class="col-12 col-lg-8 order-lg-1">
+        <div class="card shadow-sm border-0 h-100 p-2 p-md-4">
+            <div class="card-body">
+                <h5 class="card-title text-muted mb-4 small text-uppercase fw-bold">Regional Distribution</h5>
+                <div style="height: 450px; position: relative;">
+                    <canvas id="stateChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const categoryName = "{{ category }}";
+    let myChart = null;
+
+    function initChart(labels, data) {
+        const ctx = document.getElementById('stateChart').getContext('2d');
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `${categoryName} Volume`,
+                    data: data,
+                    backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: window.innerWidth < 768 ? 'y' : 'x',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    function loadData() {
+        showLoader();
+        const state = document.getElementById('stateFilter').value;
+        const district = document.getElementById('districtFilter').value;
+        const params = `?state=${state}&district=${district}`;
+
+        fetch(`/api/data/idea/1${params}`)
+            .then(r => r.json())
+            .then(data => {
+                initChart(data.labels, data.data);
+
+                const total = data.data.reduce((a, b) => a + b, 0);
+                document.getElementById('totalCount').innerText = total.toLocaleString();
+                document.getElementById('topRegion').innerText = data.labels[0] || "N/A";
+                document.getElementById('activeStates').innerText = data.labels.length;
+                hideLoader();
+            })
+            .catch(() => hideLoader());
+    }
+
+    document.getElementById('stateFilter').addEventListener('change', function () {
+        const state = this.value;
+        const districtSelect = document.getElementById('districtFilter');
+        districtSelect.innerHTML = '<option value="All">Loading...</option>';
+
+        if (state !== "All") {
+            fetch(`/api/districts/${state}`).then(r => r.json()).then(data => {
+                districtSelect.innerHTML = '<option value="All">All Districts</option>';
+                data.forEach(d => {
+                    districtSelect.innerHTML += `<option value="${d}">${d}</option>`;
+                });
+                loadData();
+            });
+        } else {
+            districtSelect.innerHTML = '<option value="All">All Districts</option>';
+            loadData();
+        }
+    });
+
+    document.getElementById('districtFilter').addEventListener('change', loadData);
+    document.addEventListener("DOMContentLoaded", loadData);
+
+    // Handle orientation/resize for bar axis
+    window.addEventListener('resize', () => {
+        if (myChart) {
+            myChart.options.indexAxis = window.innerWidth < 768 ? 'y' : 'x';
+            myChart.update();
+        }
+    });
+</script>
+{% endblock %}
