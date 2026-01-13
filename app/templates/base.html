@@ -378,8 +378,12 @@
 
                     <h5 class="mb-0 fw-bold d-none d-sm-block">Analytics Dashboard</h5>
 
-                    <div class="ms-auto nav-filters">
+                    <div class="ms-auto nav-filters align-items-center">
                         {% block filters %}{% endblock %}
+                        <a href="#" id="globalExportBtn" class="btn btn-primary shadow-sm hover-scale ms-md-2"
+                            title="Export Filtered Dataset">
+                            <i class="fas fa-file-export me-1"></i> <span class="d-none d-md-inline">Dataset</span>
+                        </a>
                     </div>
                 </div>
             </nav>
@@ -445,8 +449,27 @@
         function hideLoader() {
             setTimeout(() => {
                 loader.classList.add('fade-out');
-            }, 1500); // Increased delay for more premium feel and data stability
+            }, 1000);
         }
+
+        // Global Export Handler
+        function updateGlobalExportLink() {
+            const state = document.getElementById('stateFilter')?.value || 'All';
+            const district = document.getElementById('districtFilter')?.value || 'All';
+            const btn = document.getElementById('globalExportBtn');
+            if (btn) {
+                btn.href = `/export/global/dataset?state=${state}&district=${district}`;
+            }
+        }
+
+        document.addEventListener('change', (e) => {
+            if (e.target.id === 'stateFilter' || e.target.id === 'districtFilter') {
+                updateGlobalExportLink();
+            }
+        });
+
+        // Initialize export link
+        updateGlobalExportLink();
 
         // Safety timeout to ensure loader doesn't get stuck
         window.addEventListener('load', () => {

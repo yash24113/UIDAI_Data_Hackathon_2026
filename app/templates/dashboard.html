@@ -81,7 +81,14 @@
             <div class="card shadow-sm border-0 h-100 transition-hover">
                 <div
                     class="card-header bg-white border-bottom-0 py-3 d-flex justify-content-between align-items-center">
-                    <span class="badge bg-primary bg-opacity-10 text-primary border-0 px-3 py-2">Idea {{ i }}</span>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border-0 px-3 py-2 me-2">Idea {{ i
+                            }}</span>
+                        <a href="#" class="btn btn-sm btn-outline-light text-muted border-0 p-1"
+                            onclick="exportCard(event, {{ i }})" title="Export CSV">
+                            <i class="fas fa-download small"></i>
+                        </a>
+                    </div>
                     <a href="/analysis/idea/{{ i }}"
                         class="btn btn-sm btn-link text-decoration-none fw-bold p-0 text-primary">
                         EXPLORE <i class="fas fa-arrow-right small ms-1"></i>
@@ -107,6 +114,13 @@
 
 {% block scripts %}
 <script>
+    function exportCard(e, id) {
+        e.preventDefault();
+        const state = document.getElementById('stateFilter').value;
+        const district = document.getElementById('districtFilter').value;
+        window.location.href = `/export/idea/csv/${id}?state=${state}&district=${district}`;
+    }
+
     let charts = {};
 
     function initChart(id, type, label, bgColor) {
@@ -161,6 +175,11 @@
             .then(r => r.json())
             .then(data => {
                 document.getElementById('totalEnrolment').innerText = data.total_enrolment.toLocaleString();
+                document.getElementById('problemText').innerText = data.problem;
+                document.getElementById('insightText').innerText = data.insight;
+                document.getElementById('solutionText').innerText = data.solution;
+                document.getElementById('reasonsHigh').innerText = data.reasons_high || "N/A";
+                document.getElementById('reasonsLow').innerText = data.reasons_low || "N/A";
                 document.getElementById('totalDemo').innerText = data.total_demographic_updates.toLocaleString();
                 document.getElementById('totalBio').innerText = data.total_biometric_updates.toLocaleString();
                 // Removed premature hideLoader()

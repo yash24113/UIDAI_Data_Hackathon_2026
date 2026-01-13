@@ -5,16 +5,76 @@ class Analyzer:
     def __init__(self, loader):
         self.loader = loader
         self.metadata = {
-            1: {"title": "District-Level Activity Insights", "problem": "Uneven distribution of Aadhaar services leads to resource mismanagement and long wait times for citizens.", "solution": "GOVERNMENT SOLUTION: Strategically deploy mobile Aadhaar vans and increase operator strength in identified high-activity districts to ensure 100% service coverage."},
-            2: {"title": "Biometric Update Camps", "problem": "Citizens in specific areas are failing to update biometrics, leading to authentication failures in welfare schemes.", "solution": "GOVERNMENT SOLUTION: Mandatory Biometric Update Camps to be organized in the identified districts, synchronized with local fair-price shops and schools."},
-            3: {"title": "Zero-Knowledge Age Verifier", "problem": "Requirement for secure, privacy-preserving age verification for first-time voters without exposing full Aadhaar details.", "solution": "GOVERNMENT SOLUTION: Implementation of ZKP-based age verification APIs for the Election Commission, focusing on districts with high 18+ enrollment growth."},
-            4: {"title": "The Ghost Child Indicator", "problem": "Low child enrollment (0-5 years) indicates potential gaps in birth-registration-linked Aadhaar saturation.", "solution": "GOVERNMENT SOLUTION: Integration of Aadhaar enrollment with the 'Mother and Child Tracking System' (MCTS) in identified low-performance districts."},
-            5: {"title": "System Integrity Shield", "problem": "Unusual spikes in demographic updates might signal systematic data manipulation or internal process breaches.", "solution": "GOVERNMENT SOLUTION: Immediate automated audit of service centers in high-spike pincodes and enforcement of dual-factor authentication for operators."},
-            6: {"title": "Financial Inclusion Score", "problem": "Gaps in digital facility updates hinder the transition to a direct benefit transfer (DBT) enabled economy.", "solution": "GOVERNMENT SOLUTION: Link Aadhaar update frequency with Jan Dhan account activity to identify and bridge financial inclusion gaps in rural clusters."},
-            7: {"title": "Demographic & Enrollment Activity", "problem": "High enrollment states often face language barriers, leading to data entry errors by non-native operators.", "solution": "GOVERNMENT SOLUTION: Mandatory deployment of multi-lingual support interfaces and local language translators at regional hubs in top-performing states."},
-            8: {"title": "Service Center Health Monitor", "problem": "Persistent demographic updates with zero biometric updates indicate faulty fingerprint/iris scanners at centers.", "solution": "GOVERNMENT SOLUTION: Real-time hardware health monitoring dashboard and automatic ticket generation for device replacement in identified pincodes."},
-            9: {"title": "Disaster Relief Planning", "problem": "Lack of real-time data on population displacement during natural disasters like floods or cyclones.", "solution": "GOVERNMENT SOLUTION: Utilize demographic update spikes (address changes) as a proxy for migration tracking to optimize relief supply logistics."},
-            10: {"title": "Easy Life in Cities", "problem": "Extreme overcrowding at urban Aadhaar Seva Kendras (ASKs) leads to citizen dissatisfaction and administrative strain.", "solution": "GOVERNMENT SOLUTION: Smart Appointment Scheduling and extended shift timings for centers in high-traffic urban pincodes to reduce footfall congestion."}
+            1: {
+                "title": "District-Level Activity Insights", 
+                "problem": "Uneven distribution of Aadhaar services leads to resource mismanagement and long wait times for citizens.", 
+                "solution": "GOV SOLUTION: Deploy 500+ mobile Aadhaar vans in high-impact districts. Implement 'Aadhaar on Wheels' for remote clusters to ensure no citizen travels >5km for services.",
+                "reasons_high": "High urbanization, seasonal migration for labor, and the presence of major industrial hubs.",
+                "reasons_low": "Geographical terrain challenges, lower digital literacy, and sparse population density in rural borders."
+            },
+            2: {
+                "title": "Biometric Update Camps", 
+                "problem": "Citizens in specific areas are failing to update biometrics, leading to authentication failures in welfare schemes.", 
+                "solution": "GOV SOLUTION: Launch 'Sanjeevani Biometric Camps' integrated with PDS shops. Provide 100% subsidy for biometric updates for senior citizens and BPL families.",
+                "reasons_high": "Proactive local administration and high awareness through community health workers.",
+                "reasons_low": "Outdated equipment at local centers and lack of awareness regarding the 10-year update cycle."
+            },
+            3: {
+                "title": "Zero-Knowledge Age Verifier", 
+                "problem": "Requirement for secure, privacy-preserving age verification for first-time voters without exposing full Aadhaar details.", 
+                "solution": "GOV SOLUTION: Deploy ZKP-Verifier as a standard for all government portals. This protects privacy while enabling instant 'Proof of Age' for youth services.",
+                "reasons_high": "Large demographic dividend and rapid digital adoption among the 18-25 age group.",
+                "reasons_low": "Delayed birth registrations in previous decades and limited access to smart devices for digital verification."
+            },
+            4: {
+                "title": "The Ghost Child Indicator", 
+                "problem": "Low child enrollment (0-5 years) indicates potential gaps in birth-registration-linked Aadhaar saturation.", 
+                "solution": "GOV SOLUTION: Mandate 'Aadhaar-at-Birth' in all government hospitals. Link newborn enrollment with Anganwadi nutrition benefits to ensure 100% child saturation.",
+                "reasons_high": "Strong institutional delivery rates and active Anganwadi networks.",
+                "reasons_low": "High rate of home deliveries in remote areas and lack of awareness about the 'Blue Aadhaar' for children."
+            },
+            5: {
+                "title": "System Integrity Shield", 
+                "problem": "Unusual spikes in demographic updates might signal systematic data manipulation or internal process breaches.", 
+                "solution": "GOV SOLUTION: Implement AI-driven anomaly detection. Centers showing >300% spike in address changes will trigger an automatic 24-hour suspension and audit.",
+                "reasons_high": "Real estate booms in specific zones or targeted fraud attempts by unverified operators.",
+                "reasons_low": "Stable residential patterns and high compliance with periodic audit protocols."
+            },
+            6: {
+                "title": "Financial Inclusion Score", 
+                "problem": "Gaps in digital facility updates hinder the transition to a direct benefit transfer (DBT) enabled economy.", 
+                "solution": "GOV SOLUTION: Incentivize Banks to integrate Aadhaar seeding at the doorstep. Offer 'Digital Mitra' rewards for centers achieving 100% DBT linking in their village.",
+                "reasons_high": "Strong presence of regional rural banks and aggressive financial literacy campaigns.",
+                "reasons_low": "Limited banking infrastructure and preference for cash-based transactions in weekly local markets."
+            },
+            7: {
+                "title": "Demographic & Enrollment Activity", 
+                "problem": "High enrollment states often face language barriers, leading to data entry errors by non-native operators.", 
+                "solution": "GOV SOLUTION: Multi-lingual Aadhaar SDK deployment. Ensure all 22 official languages are supported at every enrollment station to minimize data correction costs.",
+                "reasons_high": "State-sponsored infrastructure support and dense network of Common Service Centers (CSCs).",
+                "reasons_low": "Language isolation in hilly areas and lack of trained bi-lingual operators."
+            },
+            8: {
+                "title": "Service Center Health Monitor", 
+                "problem": "Persistent demographic updates with zero biometric updates indicate faulty fingerprint/iris scanners at centers.", 
+                "solution": "GOV SOLUTION: 'Asset Health' IoT sensors for scanners. Automatically dispatch repair technicians when a scanner fails more than 5 consecutive attempts.",
+                "reasons_high": "Regular maintenance schedules and availability of backup hardware in urban hubs.",
+                "reasons_low": "Extreme climate conditions (humidity/dust) affecting sensor sensitivity and lack of local repair shops."
+            },
+            9: {
+                "title": "Disaster Relief Planning", 
+                "problem": "Lack of real-time data on population displacement during natural disasters like floods or cyclones.", 
+                "solution": "GOV SOLUTION: 'Crisis Aadhaar Tracker'. Use address update spikes to identify migration routes during floods to redirect food and medical supplies in real-time.",
+                "reasons_high": "Frequent exposure to climate risks and high community resilience through digital tracking.",
+                "reasons_low": "Infrastructure collapse during disasters preventing citizens from reaching digital update points."
+            },
+            10: {
+                "title": "Easy Life in Cities", 
+                "problem": "Extreme overcrowding at urban Aadhaar Seva Kendras (ASKs) leads to citizen dissatisfaction and administrative strain.", 
+                "solution": "GOV SOLUTION: 'Aadhaar-on-Demand' appointment system with dynamic pricing (free for morning slots). Open 24/7 hyper-centers in Metro stations.",
+                "reasons_high": "Rapid migration for white-collar jobs and high density of student population.",
+                "reasons_low": "Effective implementation of appointment-only systems and decentralized neighborhood kiosks."
+            }
         }
 
     def get_summary(self, state_filter=None, district_filter=None):
@@ -32,7 +92,7 @@ class Analyzer:
         return summary
 
     def filter_data(self, df, state_filter=None, district_filter=None):
-        if state_filter:
+        if state_filter and state_filter != "All":
             df = df[df['state'] == state_filter]
         if district_filter and district_filter != "All":
             df = df[df['district'] == district_filter]
@@ -45,6 +105,8 @@ class Analyzer:
             "title": meta.get("title", ""),
             "problem": meta.get("problem", ""),
             "solution": meta.get("solution", ""),
+            "reasons_high": meta.get("reasons_high", ""),
+            "reasons_low": meta.get("reasons_low", ""),
             "labels": labels,
             "data": data,
             "insight": insight,
