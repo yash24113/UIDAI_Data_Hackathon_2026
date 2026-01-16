@@ -104,9 +104,24 @@
                             <p id="insightText" class="fw-bold text-dark small">Loading...</p>
                         </div>
 
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-info fw-bold small mb-2"><i
+                                    class="fas fa-chart-line me-1"></i> Reasons for Variance</h6>
+                            <div class="bg-light p-3 rounded-3 mb-2">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1"
+                                    style="font-size: 0.65rem;">Why High?</small>
+                                <p id="reasonsHigh" class="text-dark small mb-0">Loading...</p>
+                            </div>
+                            <div class="bg-light p-3 rounded-3">
+                                <small class="text-uppercase text-muted fw-bold d-block mb-1"
+                                    style="font-size: 0.65rem;">Why Low?</small>
+                                <p id="reasonsLow" class="text-dark small mb-0">Loading...</p>
+                            </div>
+                        </div>
+
                         <div class="mb-0">
                             <h6 class="text-uppercase text-success fw-bold small mb-2"><i
-                                    class="fas fa-check-circle me-1"></i> Government Recommended Solution</h6>
+                                    class="fas fa-check-circle me-1"></i> Citizen-Centric Solution</h6>
                             <p id="solutionText" class="text-dark small lh-base">Loading...</p>
                         </div>
                     </div>
@@ -342,7 +357,15 @@
         fetch(`/api/data/idea/${ideaId}${params}`)
             .then(r => r.json())
             .then(data => {
+<<<<<<< HEAD
                 currentData = data; // Store for switching
+=======
+                document.getElementById('problemText').innerText = data.problem;
+                document.getElementById('insightText').innerText = data.insight;
+                document.getElementById('reasonsHigh').innerText = data.reasons_high || "N/A";
+                document.getElementById('reasonsLow').innerText = data.reasons_low || "N/A";
+                document.getElementById('solutionText').innerText = data.solution;
+>>>>>>> df97a38a37344c727cf7e84505d8d0d83f2439d0
 
                 // Init with current language
                 const lang = document.getElementById('languageSelect').value || 'en';

@@ -323,6 +323,7 @@ def export_idea_csv(idea_id):
     buffer.seek(0)
     
     return send_file(buffer, as_attachment=True, download_name=f'Idea_{idea_id}_Data.csv', mimetype='text/csv')
+<<<<<<< HEAD
 
 # Chatbot Route
 from app.gemini_analysis import GeminiAnalyzer
@@ -428,3 +429,32 @@ def chat():
     
     response = gemini.chat_response(message, context=context, image_data=image_data, language=language)
     return jsonify({"response": response})
+=======
+@app.route('/export/global/dataset')
+def export_global_dataset():
+    # Export full filtered data as CSV
+    state = request.args.get('state')
+    district = request.args.get('district')
+    
+    if state == "All": state = None
+    if district == "All": district = None
+
+    # We concatenate all dataframes but filtered
+    df_enrol = analyzer.filter_data(loader.enrolment_df, state, district).copy()
+    df_enrol['Dataset_Type'] = 'Enrolment'
+    
+    df_demo = analyzer.filter_data(loader.demographic_df, state, district).copy()
+    df_demo['Dataset_Type'] = 'Demographic'
+    
+    df_bio = analyzer.filter_data(loader.biometric_df, state, district).copy()
+    df_bio['Dataset_Type'] = 'Biometric'
+    
+    full_df = pd.concat([df_enrol, df_demo, df_bio], ignore_index=True)
+    
+    buffer = io.BytesIO()
+    full_df.to_csv(buffer, index=False)
+    buffer.seek(0)
+    
+    fname = f"UIDAI_Filtered_Dataset_{state or 'All'}_{district or 'All'}.csv"
+    return send_file(buffer, as_attachment=True, download_name=fname, mimetype='text/csv')
+>>>>>>> df97a38a37344c727cf7e84505d8d0d83f2439d0
