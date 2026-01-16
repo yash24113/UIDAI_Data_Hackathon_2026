@@ -323,7 +323,6 @@ def export_idea_csv(idea_id):
     buffer.seek(0)
     
     return send_file(buffer, as_attachment=True, download_name=f'Idea_{idea_id}_Data.csv', mimetype='text/csv')
-<<<<<<< HEAD
 
 # Chatbot Route
 from app.gemini_analysis import GeminiAnalyzer
@@ -429,7 +428,7 @@ def chat():
     
     response = gemini.chat_response(message, context=context, image_data=image_data, language=language)
     return jsonify({"response": response})
-=======
+
 @app.route('/export/global/dataset')
 def export_global_dataset():
     # Export full filtered data as CSV
@@ -457,4 +456,4 @@ def export_global_dataset():
     
     fname = f"UIDAI_Filtered_Dataset_{state or 'All'}_{district or 'All'}.csv"
     return send_file(buffer, as_attachment=True, download_name=fname, mimetype='text/csv')
->>>>>>> df97a38a37344c727cf7e84505d8d0d83f2439d0
+
