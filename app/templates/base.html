@@ -5,8 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UIDAI Analytics Dashboard 2026</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/fingerprint.png') }}" sizes="32x32">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/fingerprint.png') }}" sizes="16x16">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/fingerprint.png') }}">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chatbot CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Chart.js -->
@@ -45,83 +51,132 @@
         }
 
         /* Custom Data Analysis Loader Styling */
+        /* Premium Data Analysis Loader Styling */
         .analysis-loader {
             position: relative;
-            width: 120px;
-            height: 100px;
-            margin-bottom: 2rem;
+            width: 160px;
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         }
 
         .loader-chart {
             display: flex;
             align-items: flex-end;
-            gap: 6px;
-            height: 60px;
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
+            gap: 8px;
+            height: 80px;
         }
 
         .loader-bar {
             width: 12px;
+            background: rgba(13, 110, 253, 0.2);
+            border-radius: 2px;
+            animation: data-stream 1.5s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(13, 110, 253, 0.1);
+        }
+
+        .loader-bar:nth-child(odd) {
             background: var(--primary-color);
-            border-radius: 4px 4px 0 0;
-            animation: pulse-height 1.2s ease-in-out infinite;
-            opacity: 0.7;
+        }
+
+        .loader-bar:nth-child(even) {
+            background: #0dcaf0;
         }
 
         .loader-bar:nth-child(1) {
             height: 40%;
-            animation-delay: 0.1s;
+            animation-delay: 0.0s;
         }
 
         .loader-bar:nth-child(2) {
-            height: 75%;
-            animation-delay: 0.2s;
+            height: 70%;
+            animation-delay: 0.1s;
         }
 
         .loader-bar:nth-child(3) {
             height: 50%;
-            animation-delay: 0.3s;
+            animation-delay: 0.2s;
         }
 
         .loader-bar:nth-child(4) {
             height: 90%;
-            animation-delay: 0.4s;
+            animation-delay: 0.3s;
         }
 
         .loader-bar:nth-child(5) {
             height: 60%;
-            animation-delay: 0.5s;
+            animation-delay: 0.4s;
+        }
+
+        .loader-bar:nth-child(6) {
+            height: 80%;
+            animation-delay: 0.2s;
+        }
+
+        .loader-bar:nth-child(7) {
+            height: 45%;
+            animation-delay: 0.1s;
+        }
+
+        .loader-scan-line {
+            position: absolute;
+            top: 0;
+            left: -20px;
+            width: 120%;
+            height: 2px;
+            background: #0dcaf0;
+            box-shadow: 0 0 15px #0dcaf0, 0 0 5px #fff;
+            animation: scan-vertical 2s linear infinite;
+            z-index: 10;
+            opacity: 0.8;
         }
 
         .loader-search {
             position: absolute;
-            top: -10px;
+            top: -25px;
             left: 0;
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            animation: scan-chart 2.5s linear infinite;
-            z-index: 2;
+            font-size: 2rem;
+            color: #0d6efd;
+            text-shadow: 0 0 10px rgba(13, 110, 253, 0.4);
+            animation: search-scan 3s ease-in-out infinite;
+            z-index: 15;
         }
 
-        @keyframes pulse-height {
+        @keyframes search-scan {
+            0% {
+                left: 10%;
+                transform: rotate(-10deg) scale(1);
+            }
+
+            50% {
+                left: 80%;
+                transform: rotate(10deg) scale(1.1);
+            }
+
+            100% {
+                left: 10%;
+                transform: rotate(-10deg) scale(1);
+            }
+        }
+
+        @keyframes data-stream {
 
             0%,
             100% {
                 transform: scaleY(1);
+                opacity: 0.8;
             }
 
             50% {
-                transform: scaleY(0.7);
+                transform: scaleY(0.6);
+                opacity: 0.4;
             }
         }
 
-        @keyframes scan-chart {
+        @keyframes scan-vertical {
             0% {
-                left: -20px;
-                transform: rotate(0deg);
+                top: 0%;
                 opacity: 0;
             }
 
@@ -129,23 +184,12 @@
                 opacity: 1;
             }
 
-            45% {
-                left: 100px;
-                transform: rotate(15deg);
-            }
-
-            55% {
-                left: 100px;
-                transform: rotate(15deg);
-            }
-
             90% {
                 opacity: 1;
             }
 
             100% {
-                left: -20px;
-                transform: rotate(0deg);
+                top: 100%;
                 opacity: 0;
             }
         }
@@ -251,10 +295,11 @@
         }
 
         .navbar {
-            padding: 0.75rem 1.5rem;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background: #ffffff !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+            z-index: 1020;
         }
 
         .container-fluid {
@@ -310,30 +355,261 @@
             background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
         }
 
+        .form-select-custom {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.6rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4a5568;
+            background-color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+            min-width: 160px;
+        }
+
+        .form-select-custom:hover {
+            border-color: #cbd5e0;
+        }
+
+        .form-select-custom:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+            outline: none;
+        }
+
         .stat-card h2 {
             font-weight: 800;
             margin: 10px 0;
+            letter-spacing: -0.5px;
+        }
+
+        /* Accessibility Font Sizes */
+        body.fs-small {
+            font-size: 0.875rem;
+        }
+
+        body.fs-large {
+            font-size: 1.125rem;
+        }
+
+        body.fs-small h5 {
+            font-size: 1rem;
+        }
+
+        body.fs-large h5 {
+            font-size: 1.5rem;
+        }
+
+        /* Tricolor Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            z-index: 10001;
+            background: #f1f1f1;
+        }
+
+        .progress-bar-tricolor {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #FF9933 33%, #FFFFFF 33%, #FFFFFF 66%, #138808 66%);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Top Toolbar */
+        .top-toolbar {
+            background: #fff;
+            padding: 5px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
+            z-index: 1030;
+            position: sticky;
+            top: 4px;
+        }
+
+        .toolbar-item {
+            cursor: pointer;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+        }
+
+        .toolbar-item:hover {
+            color: #0d6efd;
+        }
+
+        .toolbar-divider {
+            color: #ccc;
+        }
+
+        /* Accessibility Modal Styling */
+        .modal-header-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .acc-section-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #333;
+        }
+
+        .acc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .acc-btn {
+            border: 1px solid #dee2e6;
+            background: #fff;
+            padding: 15px 5px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            min-height: 80px;
+        }
+
+        .acc-btn:hover {
+            border-color: #0d6efd;
+            background: #f8f9fa;
+        }
+
+        .acc-btn.active {
+            border-color: #dc3545;
+            box-shadow: inset 0 0 0 1px #dc3545;
+        }
+
+        .acc-btn i {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
+
+        /* Language Grid */
+        .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .lang-btn {
+            border: 1px solid #dee2e6;
+            background: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lang-btn.active {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .lang-btn span:last-child {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Scroll Top Button */
+        #scrollTop {
+            position: fixed;
+            bottom: 90px;
+            /* Adjusted to sit above chatbot toggle */
+            right: 25px;
+            width: 50px;
+            height: 50px;
+            background: #28008a;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1040;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        #scrollTop:hover {
+            transform: translateY(-5px);
+            background: #3e00cc;
+        }
+
+        /* Dark Mode Contrast */
+        body.dark-contrast {
+            background-color: #000 !important;
+            color: #fff !important;
+        }
+
+        body.dark-contrast #page-content-wrapper,
+        body.dark-contrast .navbar,
+        body.dark-contrast .stat-card,
+        body.dark-contrast footer,
+        body.dark-contrast .card {
+            background-color: #111 !important;
+            color: #fff !important;
+            border-color: #333 !important;
+        }
+
+        body.dark-contrast .sidebar-link {
+            color: #ccc !important;
+        }
+
+        body.hide-images img {
+            display: none !important;
+        }
+
+        body.big-cursor * {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="black"><path d="M7 2l12 11.2l-5.8.1l3.3 5.3l-2.2 1.4l-3.2-5.1L7 19z"/></svg>'), auto !important;
         }
     </style>
 </head>
 
 <body>
+    <div class="progress-container">
+        <div class="progress-bar-tricolor" id="myBar"></div>
+    </div>
     <div id="loader-wrapper">
         <div class="text-center">
             <div class="analysis-loader">
                 <i class="fas fa-search loader-search"></i>
+                <div class="loader-scan-line"></div>
                 <div class="loader-chart">
                     <div class="loader-bar"></div>
                     <div class="loader-bar"></div>
                     <div class="loader-bar"></div>
                     <div class="loader-bar"></div>
                     <div class="loader-bar"></div>
+                    <div class="loader-bar"></div>
+                    <div class="loader-bar"></div>
                 </div>
-            </div>
-            <h4 class="fw-bold text-primary mt-4 mb-2">Analyzing UIDAI Data...</h4>
-            <div class="d-flex align-items-center justify-content-center gap-2">
-                <div class="spinner-grow spinner-grow-sm text-primary" role="status"></div>
-                <span class="text-muted fw-medium">Synthesizing insights for 2026</span>
             </div>
         </div>
     </div>
@@ -370,6 +646,28 @@
 
         <!-- Page Content -->
         <div id="page-content-wrapper">
+            <!-- Top Toolbar from Image -->
+            <div class="top-toolbar">
+                <a href="#main-content" class="toolbar-item d-none d-md-block">Skip to main content</a>
+                <span class="toolbar-divider d-none d-md-block">|</span>
+                <span class="toolbar-item" title="Calendar"><i class="far fa-calendar-alt"></i></span>
+                <span class="toolbar-divider">|</span>
+                <span class="toolbar-item" data-bs-toggle="modal" data-bs-target="#accessibilityModal"
+                    title="Accessibility Tools">
+                    <i class="fas fa-universal-access"></i>
+                </span>
+                <span class="toolbar-divider">|</span>
+                <span class="toolbar-item" data-bs-toggle="modal" data-bs-target="#languageModal"
+                    title="Select Language">
+                    <i class="fas fa-language"></i>
+                </span>
+                <span class="toolbar-divider">|</span>
+                <span class="toolbar-item">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/4/41/Flag_of_India.svg" height="20"
+                        alt="India Flag">
+                </span>
+            </div>
+
             <nav class="navbar navbar-light bg-white sticky-top">
                 <div class="container-fluid d-flex flex-wrap align-items-center">
                     <button class="btn btn-light shadow-sm me-3" id="menu-toggle">
@@ -388,20 +686,584 @@
                 {% block content %}{% endblock %}
             </div>
 
-            <footer>
-                <div class="container text-center">
-                    <p class="mb-1 fw-bold text-dark">UIDAI Data Hackathon 2026</p>
-                    <p class="text-muted small mb-0">Actionable Insights for Better Governance</p>
-                    <div class="mt-3">
-                        <small class="text-muted">&copy; 2026 Government of India. All Rights Reserved.</small>
+            <footer class="bg-dark text-white pt-5 pb-4">
+                <div class="container">
+                    <div class="row g-4">
+                        <!-- Government Branding -->
+                        <div class="col-md-6 mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://upload.wikimedia.org/wikipedia/en/c/cf/Aadhaar_Logo.svg"
+                                    alt="UIDAI Logo" class="me-2 bg-white rounded p-1"
+                                    style="height: 60px; width: auto;">
+                                <div>
+                                    <h5 class="mb-0 fw-bold">UIDAI Hackathon 2026</h5>
+                                    <small class="text-white-50">Unique Identification Authority of India</small>
+                                </div>
+                            </div>
+                            <p class="small text-white-50">Empowering residents with a unique identity and a digital
+                                platform to authenticate anytime, anywhere. This dashboard provides deep insights into
+                                enrolment, biometric, and demographic trends.</p>
+                        </div>
+
+                        <!-- Contact Info -->
+                        <div class="col-md-6 mb-4 text-md-end">
+                            <h6 class="text-uppercase fw-bold mb-3">Contact Hackathon Support</h6>
+                            <address class="text-white-50 small">
+                                <p class="mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    New Delhi, 110001
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    <a href="mailto:hackathon@uidai.gov.in"
+                                        class="text-white-50 text-decoration-none hover-white">hackathon@uidai.gov.in</a>
+                                </p>
+                            </address>
+
+                            <!-- Social Media -->
+                            <div class="mt-3">
+                                <div class="d-flex gap-3 justify-content-md-end">
+                                    <a href="#" class="text-white-50 hover-white"><i
+                                            class="fab fa-twitter fa-lg"></i></a>
+                                    <a href="#" class="text-white-50 hover-white"><i
+                                            class="fab fa-linkedin-in fa-lg"></i></a>
+                                    <a href="#" class="text-white-50 hover-white"><i
+                                            class="fab fa-github fa-lg"></i></a>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <hr class="border-secondary my-4">
+
+                    <!-- Copyright and Other Links -->
+                    <div class="row align-items-center">
+                        <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                            <p class="mb-0 small text-white-50">
+                                &copy; 2026 <a href="https://uidai.gov.in" class="text-white text-decoration-none"
+                                    target="_blank">Unique Identification Authority of India</a>.
+                                All Rights Reserved.
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-center text-md-end">
+                            <div class="d-flex justify-content-md-end justify-content-center gap-3">
+                                <a href="https://www.india.gov.in/"
+                                    class="text-white-50 text-decoration-none small hover-white" target="_blank">
+                                    <img src="https://www.india.gov.in/sites/upload_files/npi/files/emblem_1.png"
+                                        alt="National Portal of India" style="height: 20px;" class="me-1">
+                                    India.gov.in
+                                </a>
+                                <a href="https://www.digitalindia.gov.in/"
+                                    class="text-white-50 text-decoration-none small hover-white" target="_blank">
+                                    <i class="fas fa-laptop-code me-1"></i> Digital India
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Accessibility and Language Toggle -->
+                    <div class="mt-3 pt-2 border-top border-secondary">
+                        <div class="d-flex flex-wrap justify-content-center gap-3 small">
+                            <a href="#" class="text-white-50 text-decoration-none hover-white"
+                                onclick="changeFontSize('small')">A-</a>
+                            <a href="#" class="text-white-50 text-decoration-none hover-white"
+                                onclick="changeFontSize('normal')">A</a>
+                            <a href="#" class="text-white-50 text-decoration-none hover-white"
+                                onclick="changeFontSize('large')">A+</a>
+                            <span class="text-white-50">|</span>
+                            <a href="#" class="text-white-50 text-decoration-none hover-white"
+                                onclick="changeLanguage('en')">English</a>
+                            <a href="#" class="text-white-50 text-decoration-none hover-white"
+                                onclick="changeLanguage('hi')">हिंदी</a>
+                            <a href="#" class="text-white-50 text-decoration-none hover-white"
+                                onclick="changeLanguage('gu')">ગુજરાતી</a>
+                            <span class="text-white-50">|</span>
+                            <a href="/accessibility" class="text-white-50 text-decoration-none hover-white">
+                                <i class="fas fa-universal-access me-1"></i> Accessibility
+                            </a>
+                            <a href="/sitemap" class="text-white-50 text-decoration-none hover-white">
+                                <i class="fas fa-sitemap me-1"></i> Sitemap
+                            </a>
+                        </div>
                     </div>
                 </div>
             </footer>
+            <button id="scrollTop" title="Go to top">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Accessibility Modal -->
+    <div class="modal fade" id="accessibilityModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header-custom">
+                    <h5 class="modal-title">Accessibility Tools</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="acc-section-title">Color Adjustment</div>
+                    <div class="acc-grid">
+                        <div class="acc-btn" onclick="toggleColor('dark')">
+                            <i class="fas fa-moon"></i>
+                            <span>Dark Contrast</span>
+                        </div>
+                        <div class="acc-btn active" onclick="toggleColor('normal')">
+                            <i class="fas fa-sun"></i>
+                            <span>Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="acc-section-title">Text Size</div>
+                    <div class="acc-grid">
+                        <div class="acc-btn" onclick="changeFontSize('large')">
+                            <i class="fas fa-chevron-up"></i>
+                            <span>Increase Text</span>
+                        </div>
+                        <div class="acc-btn" onclick="changeFontSize('small')">
+                            <i class="fas fa-chevron-down"></i>
+                            <span>Decrease Text</span>
+                        </div>
+                        <div class="acc-btn" onclick="changeFontSize('normal')">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Reset Text</span>
+                        </div>
+                        <div class="acc-btn">
+                            <i class="fas fa-text-height"></i>
+                            <span>Text Spacing</span>
+                        </div>
+                        <div class="acc-btn">
+                            <i class="fas fa-align-left"></i>
+                            <span>Line Height</span>
+                        </div>
+                    </div>
+
+                    <div class="acc-section-title">Others</div>
+                    <div class="acc-grid">
+                        <div class="acc-btn" onclick="toggleMisc('hide-images')">
+                            <i class="far fa-image"></i>
+                            <span>Hide Images</span>
+                        </div>
+                        <div class="acc-btn" onclick="toggleMisc('big-cursor')">
+                            <i class="fas fa-mouse-pointer"></i>
+                            <span>Big Cursor</span>
+                        </div>
+                        <div class="acc-btn">
+                            <i class="fas fa-volume-up"></i>
+                            <span>Screen Reader</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Modal -->
+    <div class="modal fade" id="languageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header-custom text-center">
+                    <h5 class="modal-title w-100">Select Language</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="lang-grid">
+                        <div class="lang-btn active" onclick="changeLanguage('en')">
+                            <span>English</span>
+                        </div>
+                        <div class="lang-btn" onclick="changeLanguage('hi')">
+                            <span>Hindi</span>
+                            <span>हिन्दी</span>
+                        </div>
+                        <div class="lang-btn" onclick="changeLanguage('gu')">
+                            <span>Gujarati</span>
+                            <span>ગુજરાતી</span>
+                        </div>
+                        <div class="lang-btn" onclick="changeLanguage('pa')">
+                            <span>Punjabi</span>
+                            <span>ਪੰਜਾਬી</span>
+                        </div>
+                        <div class="lang-btn" onclick="changeLanguage('mr')">
+                            <span>Marathi</span>
+                            <span>मराठी</span>
+                        </div>
+                        <div class="lang-btn" onclick="changeLanguage('ta')">
+                            <span>Tamil</span>
+                            <span>தமிழ்</span>
+                        </div>
+                        <div class="lang-btn" onclick="changeLanguage('te')">
+                            <span>Telugu</span>
+                            <span>తెలుగు</span>
+                        </div>
+                        <div class="lang-btn" onclick="changeLanguage('kn')">
+                            <span>Kannada</span>
+                            <span>ಕನ್ನಡ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- Accessibility & Localization Logic ---
+        const translations = {
+            'en': {
+                'title': 'Analytics Dashboard',
+                'analyzing': 'Analyzing UIDAI Data...',
+                'synthesizing': 'Synthesizing insights for 2026',
+                'footer_title': 'UIDAI Data Hackathon 2026',
+                'footer_text': 'Actionable Insights for Better Governance',
+                'select_state': 'Select State',
+                'all_districts': 'All Districts',
+                'overview': 'Overview',
+                'ideas': 'Ideas Analysis',
+                'enrolment': 'Enrolment',
+                'demographic': 'Demographic',
+                'biometric': 'Biometric',
+                'full_report': 'Full Report',
+                'total_enrolment': 'Total Enrolment',
+                'demo_updates': 'Demographic Updates',
+                'bio_updates': 'Biometric Updates',
+                'insight': 'Insight',
+                'solution': 'GOVT SOLUTION',
+                'chart_activity': 'Activity',
+                'chart_recommended': 'Recommended',
+                'chart_18_vol': '18+ Volume',
+                'chart_0_5_gap': '0-5 Gap',
+                'chart_anomalies': 'Anomalies',
+                'chart_inclusion': 'Inclusion',
+                'chart_language': 'Language',
+                'chart_faulty': 'Faulty',
+                'chart_migration': 'Migration',
+                'chart_footfall': 'Footfall'
+            },
+            'hi': {
+                'title': 'एनालिटिक्स डैशबोर्ड',
+                'analyzing': 'यूआईडीएआई डेटा का विश्लेषण...',
+                'synthesizing': '2026 के लिए अंतर्दृष्टि का संश्लेषण',
+                'footer_title': 'यूआईडीएआई डेटा हैकथॉन 2026',
+                'footer_text': 'बेहतर शासन के लिए कार्रवाई योग्य अंतर्दृष्टि',
+                'select_state': 'राज्य चुनें',
+                'all_districts': 'सभी जिले',
+                'overview': 'अवलोकन',
+                'ideas': 'विचार विश्लेषण',
+                'enrolment': 'नामांकन',
+                'demographic': 'जनसांख्यिकीय',
+                'biometric': 'बायोमेट्रिक',
+                'full_report': 'पूर्ण रिपोर्ट',
+                'total_enrolment': 'कुल नामांकन',
+                'demo_updates': 'जनसांख्यिकीय अद्यतन',
+                'bio_updates': 'बायोमेट्रिक अद्यतन',
+                'insight': 'अन्तर्दृष्टि',
+                'solution': 'सरकारी समाधान',
+                'chart_activity': 'गतिविधि',
+                'chart_recommended': 'अनुशंसित',
+                'chart_18_vol': '18+ मात्रा',
+                'chart_0_5_gap': '0-5 अतंर',
+                'chart_anomalies': 'विसंगतियां',
+                'chart_inclusion': 'समावेश',
+                'chart_language': 'भाषा',
+                'chart_faulty': 'दोषपूर्ण',
+                'chart_migration': 'प्रवास',
+                'chart_footfall': 'फुटफॉल'
+            },
+            'gu': {
+                'title': 'એનાલિટીક્સ ડેશબોર્ડ',
+                'analyzing': 'યુઆઈડીએઆઈ ડેટા વિશ્લેષણ...',
+                'synthesizing': '2026 માટે આંતરદૃષ્ટિ',
+                'footer_title': 'યુઆઈડીએઆઈ ડેટા હેકાથોન 2026',
+                'footer_text': 'વધુ સારા શાસન માટે પગલાં લેવા યોગ્ય આંતરદૃષ્ટિ',
+                'select_state': 'રાજ્ય પસંદ કરો',
+                'all_districts': 'બધા જિલ્લાઓ',
+                'overview': 'ઝાંખી',
+                'ideas': 'વિચારો વિશ્લેષણ',
+                'enrolment': 'નોંધણી',
+                'demographic': 'વસ્તી વિષયક',
+                'biometric': 'બાયોમેટ્રિક',
+                'full_report': 'સંપૂર્ણ અહેવાલ',
+                'total_enrolment': 'કુલ નોંધણી',
+                'demo_updates': 'વસ્તી વિષયક સુધારાઓ',
+                'bio_updates': 'બાયોમેટ્રિક સુધારાઓ',
+                'insight': 'આંતરદૃષ્ટિ',
+                'solution': 'સરકારી ઉકેલ',
+                'chart_activity': 'પ્રવૃત્તિ',
+                'chart_recommended': 'ભલામણ કરેલ',
+                'chart_18_vol': '18+ જથ્થો',
+                'chart_0_5_gap': '0-5 ગેપ',
+                'chart_anomalies': 'વિસંગતતાઓ',
+                'chart_inclusion': 'સમાવેશ',
+                'chart_language': 'ભાષા',
+                'chart_faulty': 'ખામીયુક્ત',
+                'chart_migration': 'સ્થળાંતર',
+                'chart_footfall': 'ફૂટફોલ'
+            }
+        };
+
+        let currentLang = 'en';
+
+        // --- Scroll UI Logic ---
+        window.onscroll = function () {
+            // Progress Bar
+            var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            var scrolled = (winScroll / height) * 100;
+            const myBar = document.getElementById("myBar");
+            if (myBar) myBar.style.width = scrolled + "%";
+
+            // Scroll Top Button
+            var scrollTopBtn = document.getElementById("scrollTop");
+            if (scrollTopBtn) {
+                if (winScroll > 300) {
+                    scrollTopBtn.style.display = "flex";
+                } else {
+                    scrollTopBtn.style.display = "none";
+                }
+            }
+        };
+
+        const scrollTopEle = document.getElementById("scrollTop");
+        if (scrollTopEle) {
+            scrollTopEle.onclick = function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+        }
+
+        function changeFontSize(size) {
+            const body = document.body;
+            body.classList.remove('fs-small', 'fs-large');
+            if (size === 'small') body.classList.add('fs-small');
+            if (size === 'large') body.classList.add('fs-large');
+
+            // Mark active in modal
+            const btns = document.querySelectorAll('#accessibilityModal .acc-grid:nth-of-type(2) .acc-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            // Use event.currentTarget if called from onclick, or manual logic
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            }
+        }
+
+        // --- Accessibility Logic ---
+        function toggleColor(mode) {
+            const body = document.body;
+            const btns = document.querySelectorAll('#accessibilityModal .acc-grid:first-of-type .acc-btn');
+
+            body.classList.remove('dark-contrast');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if (mode === 'dark') {
+                body.classList.add('dark-contrast');
+            }
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            }
+        }
+
+        function toggleMisc(feature) {
+            document.body.classList.toggle(feature);
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.toggle('active');
+            }
+        }
+
+        // Helper to get translation
+        function getTrans(key) {
+            return (translations[currentLang] && translations[currentLang][key]) ? translations[currentLang][key] : (translations['en'][key] || key);
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang] || translations['en'];
+
+            // Update active state in modal
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = Array.from(document.querySelectorAll('.lang-btn')).find(b => b.textContent.includes(lang.toUpperCase()) || b.onclick.toString().includes(`'${lang}'` || b.getAttribute('onclick').includes(`'${lang}'`)));
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Update Dashboard Title
+            const titleEl = document.querySelector('.navbar h5');
+            if (titleEl) titleEl.textContent = t['title'];
+
+            // Update Loader Text
+            const loaderTitle = document.querySelector('#loader-wrapper h4');
+            if (loaderTitle) loaderTitle.textContent = t['analyzing'];
+
+            const loaderSub = document.querySelector('#loader-wrapper span');
+            if (loaderSub) loaderSub.textContent = t['synthesizing'];
+
+            // Update Sidebar Links
+            const linksMap = {
+                'Overview': 'overview',
+                'Ideas Analysis': 'ideas',
+                'Enrolment': 'enrolment',
+                'Demographic': 'demographic',
+                'Biometric': 'biometric',
+                'Full Report': 'full_report'
+            };
+
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                const textNode = Array.from(link.childNodes).find(n => n.nodeType === 3 && n.textContent.trim() !== '');
+                if (textNode) {
+                    let key = link.getAttribute('data-lang-key');
+                    if (!key) {
+                        const content = textNode.textContent.trim();
+                        for (let k in linksMap) {
+                            if (content === k) key = linksMap[k];
+                        }
+                        if (key) link.setAttribute('data-lang-key', key);
+                    }
+                    if (key && t[key]) {
+                        textNode.textContent = ' ' + t[key];
+                    }
+                }
+            });
+
+            // Update Filters
+            const stateFilter = document.getElementById('stateFilter');
+            if (stateFilter && stateFilter.options.length > 0) {
+                if (stateFilter.options[0].value === 'All') stateFilter.options[0].text = t['select_state'];
+            }
+
+            const distFilter = document.getElementById('districtFilter');
+            if (distFilter && distFilter.options.length > 0) {
+                if (distFilter.options[0].value === 'All') distFilter.options[0].text = t['all_districts'];
+            }
+
+            // Update Footer
+            const footerTitle = document.querySelector('footer p.fw-bold');
+            if (footerTitle) footerTitle.textContent = t['footer_title'];
+
+            const footerText = document.querySelector('footer p.small');
+            if (footerText) footerText.textContent = t['footer_text'];
+
+            // Dispatch event for other components
+            window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: lang } }));
+
+            // Close modal (Bootstrap 5 way)
+            const modalEl = document.getElementById('languageModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        }
+
+        // Geo Translations (States + Districts)
+        const stateTranslations = {
+            'Andhra Pradesh': { 'hi': 'आंध्र प्रदेश', 'gu': 'આંધ્ર પ્રદેશ' },
+            'Arunachal Pradesh': { 'hi': 'अरुणाचल प्रदेश', 'gu': 'અરુણાચલ પ્રદેશ' },
+            'Assam': { 'hi': 'असम', 'gu': 'આસામ' },
+            'Bihar': { 'hi': 'बिहार', 'gu': 'બિહાર' },
+            'Chhattisgarh': { 'hi': 'छत्तीसगढ़', 'gu': 'છત્તીસગઢ' },
+            'Goa': { 'hi': 'गोवा', 'gu': 'ગોવા' },
+            'Gujarat': { 'hi': 'गुजरात', 'gu': 'ગુજરાત' },
+            'Haryana': { 'hi': 'हरियाणा', 'gu': 'હરિયાણા' },
+            'Himachal Pradesh': { 'hi': 'हिमाचल प्रदेश', 'gu': 'હિમાચલ પ્રદેશ' },
+            'Jharkhand': { 'hi': 'झारखंड', 'gu': 'ઝારખંડ' },
+            'Karnataka': { 'hi': 'कर्नाटक', 'gu': 'કર્ણાટક' },
+            'Kerala': { 'hi': 'केरल', 'gu': 'કેરળ' },
+            'Madhya Pradesh': { 'hi': 'मध्य प्रदेश', 'gu': 'મધ્ય પ્રદેશ' },
+            'Maharashtra': { 'hi': 'महाराष्ट्र', 'gu': 'મહારાષ્ટ્ર' },
+            'Manipur': { 'hi': 'मणिपुर', 'gu': 'મણિપુર' },
+            'Meghalaya': { 'hi': 'मेघालय', 'gu': 'મેઘાલય' },
+            'Mizoram': { 'hi': 'मिजोरम', 'gu': 'મિઝોરમ' },
+            'Nagaland': { 'hi': 'नागालैंड', 'gu': 'નાગાલેન્ડ' },
+            'Odisha': { 'hi': 'ओडिशा', 'gu': 'ઓડિશા' },
+            'Punjab': { 'hi': 'पंजाब', 'gu': 'પંજાબ' },
+            'Rajasthan': { 'hi': 'राजस्थान', 'gu': 'રાજસ્થાન' },
+            'Sikkim': { 'hi': 'सिक्किम', 'gu': 'સિક્कિમ' },
+            'Tamil Nadu': { 'hi': 'तमिलनाडु', 'gu': 'તમિલનાડુ' },
+            'Telangana': { 'hi': 'तेलंगाना', 'gu': 'તેલંગાણા' },
+            'Tripura': { 'hi': 'त्रिपुरा', 'gu': 'ત્રિપુરા' },
+            'Uttar Pradesh': { 'hi': 'उत्तर प्रदेश', 'gu': 'ઉત્તર પ્રદેશ' },
+            'Uttarakhand': { 'hi': 'उत्तराखंड', 'gu': 'ઉત્તરાખંડ' },
+            'West Bengal': { 'hi': 'पश्चिम बंगाल', 'gu': 'પશ્ચિમ બંગાળ' },
+            // Union Territories
+            'Andaman and Nicobar Islands': { 'hi': 'अंडमान और निकोबार द्वीप समूह', 'gu': 'આંદામાન અને નિકોબાર ટાપુઓ' },
+            'Chandigarh': { 'hi': 'चंडीगढ़', 'gu': 'ચંદીગઢ' },
+            'Dadra and Nagar Haveli': { 'hi': 'दादरा और नगर हवेली', 'gu': 'દાદરા અને નગર હવેલી' },
+            'Daman and Diu': { 'hi': 'दमन और दीव', 'gu': 'દમણ અને દીવ' },
+            'Delhi': { 'hi': 'दिल्ली', 'gu': 'દિલ્હી' },
+            'Jammu and Kashmir': { 'hi': 'जम्मू और कश्मीर', 'gu': 'જમ્મુ અને કાશ્મીર' },
+            'Ladakh': { 'hi': 'लद्दाख', 'gu': 'લદ્દાખ' },
+            'Lakshadweep': { 'hi': 'लक्षद्वीप', 'gu': 'લક્ષદ્વીપ' },
+            'Puducherry': { 'hi': 'पुडुचेरी', 'gu': 'પુડુચેરી' },
+
+            // Districts (Gujarat Focus)
+            'Ahmadabad': { 'hi': 'अहमदाबाद', 'gu': 'અમદાવાદ' },
+            'Ahmedabad': { 'hi': 'अहमदाबाद', 'gu': 'અમદાવાદ' }, // Handle both spellings
+            'Surat': { 'hi': 'सूरत', 'gu': 'સુરત' },
+            'Vadodara': { 'hi': 'वडोदरा', 'gu': 'વડોદરા' },
+            'Rajkot': { 'hi': 'राजकोट', 'gu': 'રાજકોટ' },
+            'Bhavnagar': { 'hi': 'भावनगर', 'gu': 'ભાવનગર' },
+            'Jamnagar': { 'hi': 'जामनगर', 'gu': 'જામનગર' },
+            'Junagadh': { 'hi': 'जूनागढ़', 'gu': 'જુનાગઢ' },
+            'Gandhinagar': { 'hi': 'गांधीनगर', 'gu': 'ગાંધીનગર' },
+            'Kheda': { 'hi': 'खेड़ा', 'gu': 'ખેડા' },
+            'Banaskantha': { 'hi': 'बनासकांठा', 'gu': 'બનાસકાંઠા' },
+            'Sabarkantha': { 'hi': 'साबरकांठा', 'gu': 'સાબરકાંઠા' },
+            'Mehsana': { 'hi': 'मेहसाणा', 'gu': 'મહેસાણા' },
+            'Kutch': { 'hi': 'कच्छ', 'gu': 'કચ્છ' },
+            'Anand': { 'hi': 'आणंद', 'gu': 'આણંદ' },
+            'Bharuch': { 'hi': 'भरूच', 'gu': 'ભરૂચ' },
+            'Navsari': { 'hi': 'नवसारी', 'gu': 'નવસારી' },
+            'Valsad': { 'hi': 'वलसाड', 'gu': 'વલસાડ' },
+            'Porbandar': { 'hi': 'पोरबंदर', 'gu': 'પોરબંદર' },
+            'Surendranagar': { 'hi': 'सुरेंद्रनगर', 'gu': 'સુરેન્દ્રનગર' },
+            'Amreli': { 'hi': 'अमरेली', 'gu': 'અમરેલી' },
+            'Panchmahal': { 'hi': 'पंचमहल', 'gu': 'પંચમહાલ' },
+            'Dahod': { 'hi': 'दाहोद', 'gu': 'દાહોદ' },
+            'Narmada': { 'hi': 'नर्मदा', 'gu': 'નર્મદા' },
+            'Tapi': { 'hi': 'तापी', 'gu': 'તાપી' },
+            'Morbi': { 'hi': 'मोरबी', 'gu': 'મોરબી' },
+            'Aravalli': { 'hi': 'अरावली', 'gu': 'અરવલ્લી' },
+            'Mahisagar': { 'hi': 'महिसागर', 'gu': 'મહીસાગર' },
+            'Chhota Udaipur': { 'hi': 'छोटा उदयपुर', 'gu': 'છોટા ઉદેપુર' },
+            'Devbhoomi Dwarka': { 'hi': 'देवभूमि द्वारका', 'gu': 'દેવભૂમિ દ્વારકા' },
+            'Gir Somnath': { 'hi': 'गिर सोमनाथ', 'gu': 'ગીર સોમનાથ' },
+            'Botad': { 'hi': 'बोटाद', 'gu': 'બોટાદ' },
+            'Patan': { 'hi': 'पाटन', 'gu': 'પાટણ' },
+            'Dang': { 'hi': 'डांग', 'gu': 'ડાંગ' }
+        };
+
+        function getStateTrans(key) {
+            if ((!key) || (currentLang === 'en')) return key;
+            const t = stateTranslations[key];
+            return (t && t[currentLang]) ? t[currentLang] : key;
+        }
+
+        // Number Formatting (Locale Aware)
+        function formatNumber(num) {
+            let locale = 'en-IN'; // Default to Indian English
+            if (currentLang === 'hi') locale = 'hi-IN';
+            if (currentLang === 'gu') locale = 'gu-IN';
+
+            return new Intl.NumberFormat(locale).format(num);
+        }
+
+        // Auto-detect Location and Language
+        async function detectLocation() {
+            try {
+                // Using ipapi.co for free geolocation (client-side)
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+
+                if (data.region === 'Gujarat' || data.region_code === 'GJ') {
+                    changeLanguage('gu');
+                }
+            } catch (error) {
+                console.log('Geo-location failed, defaulting to English');
+            }
+        }
+
+        // Initial checks
+        window.addEventListener('DOMContentLoaded', () => {
+            detectLocation();
+        });
+    </script>
     <script>
         const menuToggle = document.getElementById("menu-toggle");
         const wrapper = document.getElementById("wrapper");
@@ -454,6 +1316,60 @@
             setTimeout(hideLoader, 8000);
         });
     </script>
+    <!-- Chatbot UI -->
+    <div class="chatbot-container">
+        <div class="chatbot-toggle" id="chatbot-toggle">
+            <i class="fas fa-comment-dots"></i>
+        </div>
+        <div class="chat-window" id="chat-window">
+            <div class="chat-header">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="ai-avatar-container">
+                        <div class="ai-ring"></div>
+                        <div class="ai-ring"></div>
+                        <div class="ai-core"></div>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Aadhaar Sahayak</div>
+                        <small class="d-flex align-items-center gap-1">
+                            <span class="status-dot"></span> AI • Virtual
+                        </small>
+                    </div>
+                </div>
+                <div class="chat-controls d-flex align-items-center gap-2">
+                    <select id="chat-lang" class="chat-lang-select" title="Select Language">
+                        <option value="en">Eng</option>
+                        <option value="hi">Hin</option>
+                        <option value="gu">Guj</option>
+                    </select>
+                    <button class="control-btn" id="chat-min" title="Minimize"><i class="fas fa-minus"></i></button>
+                    <button class="control-btn" id="chat-max" title="Maximize"><i class="fas fa-expand"></i></button>
+                    <button class="control-btn" id="chat-close" title="Close"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot">
+                    Namaste! I am Aadhaar Sahayak. How can I help you with the UIDAI data today?
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Ask about Aadhaar data...">
+                    <input type="file" id="file-input" style="display: none;" accept="image/*">
+                    <div class="input-actions">
+                        <span class="action-btn" id="attach-media" title="Upload Image"><i
+                                class="fas fa-paperclip"></i></span>
+                        <span class="action-btn" id="send-message" title="Send Message"><i
+                                class="fas fa-paper-plane"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot JS -->
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+
     {% block scripts %}{% endblock %}
 </body>
 

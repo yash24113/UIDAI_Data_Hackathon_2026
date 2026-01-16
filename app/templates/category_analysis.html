@@ -27,44 +27,80 @@
     </div>
 </div>
 
+
+
 <div class="row g-4">
-    <!-- Stats Panel -->
+    <!-- Action Bar -->
+    <div class="col-12 d-flex justify-content-end gap-2 mb-3">
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="exportMenu"
+                data-bs-toggle="dropdown">
+                <i class="fas fa-download me-2"></i>Export
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" id="btnExportCSV"><i class="fas fa-file-csv me-2"></i>CSV Data</a>
+                </li>
+                <li><a class="dropdown-item" href="#" id="btnExportPDF"><i class="fas fa-file-pdf me-2"></i>PDF
+                        Report</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Stats & Insights Panel -->
     <div class="col-12 col-lg-4 order-lg-2">
         <div class="card stat-card shadow-sm border-0 bg-primary text-white p-4 mb-4">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <p class="mb-0 text-white-50 small fw-bold">TOTAL VOLUME</p>
+                    <p class="mb-0 text-white-50 small fw-bold" id="metricLabel">TOTAL VOLUME</p>
                     <h1 id="totalCount" class="mb-0 display-4 fw-bold">...</h1>
                 </div>
                 <i class="fas fa-chart-line fs-1 opacity-25"></i>
             </div>
         </div>
 
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white py-3 border-0">
-                <h6 class="mb-0 fw-bold">Quick Insights</h6>
+                <h6 class="mb-0 fw-bold text-success"><i class="fas fa-arrow-up me-2"></i>Top Performer</h6>
             </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush" id="statsList">
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
-                        <span>Top Region</span>
-                        <span id="topRegion" class="badge bg-light text-primary border">Loading...</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
-                        <span>Active States</span>
-                        <span id="activeStates" class="badge bg-light text-primary border">Loading...</span>
-                    </li>
-                </ul>
+            <div class="card-body bg-light">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0 fw-bold" id="topName">Loading...</h5>
+                    <span class="badge bg-success" id="topValue">...</span>
+                </div>
+                <p class="small text-muted mb-0" id="topReason">...</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="mb-0 fw-bold text-danger"><i class="fas fa-arrow-down me-2"></i>Bottom Performer</h6>
+            </div>
+            <div class="card-body bg-light">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0 fw-bold" id="bottomName">Loading...</h5>
+                    <span class="badge bg-danger" id="bottomValue">...</span>
+                </div>
+                <p class="small text-muted mb-0" id="bottomReason">...</p>
             </div>
         </div>
     </div>
 
-    <!-- Top States Chart -->
+    <!-- Main Chart & Solution -->
     <div class="col-12 col-lg-8 order-lg-1">
+        <!-- Government Solution -->
+        <div class="alert alert-success border-0 shadow-sm d-flex align-items-start gap-3 mb-4" role="alert">
+            <i class="fas fa-university fs-4 mt-1"></i>
+            <div>
+                <h6 class="alert-heading fw-bold">Government Solution</h6>
+                <p class="mb-0 small" id="govSolution">Loading recommendation...</p>
+            </div>
+        </div>
+
         <div class="card shadow-sm border-0 h-100 p-2 p-md-4">
             <div class="card-body">
                 <h5 class="card-title text-muted mb-4 small text-uppercase fw-bold">Regional Distribution</h5>
-                <div style="height: 450px; position: relative;">
+                <div style="height: 400px; position: relative;">
                     <canvas id="stateChart"></canvas>
                 </div>
             </div>
@@ -110,18 +146,44 @@
         const district = document.getElementById('districtFilter').value;
         const params = `?state=${state}&district=${district}`;
 
-        fetch(`/api/data/idea/1${params}`)
+        // Update Export Links
+        document.getElementById('btnExportCSV').href = `/export/category/csv/${categoryName}${params}`;
+        document.getElementById('btnExportPDF').href = `/export/category/pdf/${categoryName}${params}`;
+
+        fetch(`/api/data/category/${categoryName}${params}`)
             .then(r => r.json())
             .then(data => {
-                initChart(data.labels, data.data);
+                if (data.error) {
+                    alert(data.error);
+                    hideLoader();
+                    return;
+                }
 
-                const total = data.data.reduce((a, b) => a + b, 0);
-                document.getElementById('totalCount').innerText = total.toLocaleString();
-                document.getElementById('topRegion').innerText = data.labels[0] || "N/A";
-                document.getElementById('activeStates').innerText = data.labels.length;
+                initChart(data.chart_labels, data.chart_data);
+
+                // Update Stats
+                document.getElementById('totalCount').innerText = data.total_volume.toLocaleString();
+                document.getElementById('metricLabel').innerText = data.metric_label.toUpperCase();
+
+                // Top Performer
+                document.getElementById('topName').innerText = data.top_performer.name;
+                document.getElementById('topValue').innerText = data.top_performer.value.toLocaleString();
+                document.getElementById('topReason').innerText = data.top_performer.reason;
+
+                // Bottom Performer
+                document.getElementById('bottomName').innerText = data.bottom_performer.name;
+                document.getElementById('bottomValue').innerText = data.bottom_performer.value.toLocaleString();
+                document.getElementById('bottomReason').innerText = data.bottom_performer.reason;
+
+                // Solution
+                document.getElementById('govSolution').innerText = data.solution;
+
                 hideLoader();
             })
-            .catch(() => hideLoader());
+            .catch(err => {
+                console.error(err);
+                hideLoader();
+            });
     }
 
     document.getElementById('stateFilter').addEventListener('change', function () {

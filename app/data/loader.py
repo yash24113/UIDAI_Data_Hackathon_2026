@@ -85,4 +85,9 @@ class DataLoader:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
-loader = DataLoader("c:/Users/HP/OneDrive/Desktop/UIDAI_Data_Hackathon_2026/Dataset")
+
+# Fix path to be relative to this file
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# app/data/loader.py -> app/data -> app -> project_root -> Dataset
+dataset_path = os.path.join(current_dir, '..', '..', 'Dataset')
+loader = DataLoader(dataset_path)

@@ -1,16 +1,24 @@
 {% extends "base.html" %}
 
 {% block filters %}
-<div class="nav-filters d-flex gap-2">
-    <select class="form-select form-select-sm shadow-sm" id="stateFilter" style="min-width: 150px;">
-        <option value="All">Select State</option>
-        {% for state in states %}
-        <option value="{{ state }}">{{ state }}</option>
-        {% endfor %}
-    </select>
-    <select class="form-select form-select-sm shadow-sm" id="districtFilter" style="min-width: 150px;">
-        <option value="All">All Districts</option>
-    </select>
+<div class="nav-filters d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2 me-3">
+        <button onclick="changeFontSize('small')" id="fontSmall" class="btn btn-sm btn-outline-secondary">A-</button>
+        <button onclick="changeFontSize('normal')" id="fontNormal" class="btn btn-sm btn-primary">A</button>
+        <button onclick="changeFontSize('large')" id="fontLarge" class="btn btn-sm btn-outline-secondary">A+</button>
+    </div>
+    <div class="vr d-none d-md-block" style="height: 24px;"></div>
+    <div class="d-flex flex-column gap-2">
+        <select class="form-select form-select-sm" id="stateFilter">
+            <option value="All">Select State</option>
+            {% for state in states %}
+            <option value="{{ state }}">{{ state }}</option>
+            {% endfor %}
+        </select>
+        <select class="form-select form-select-sm" id="districtFilter" disabled>
+            <option value="All">All Districts</option>
+        </select>
+    </div>
 </div>
 {% endblock %}
 
@@ -77,7 +85,7 @@
 
     <div class="row g-3 g-md-4">
         {% for i in range(1, 11) %}
-        <div class="col-12 col-md-6 col-xl-4 {% if i == 10 %}col-xl-12{% endif %}">
+        <div class="col-12 col-md-6">
             <div class="card shadow-sm border-0 h-100 transition-hover">
                 <div
                     class="card-header bg-white border-bottom-0 py-3 d-flex justify-content-between align-items-center">
@@ -154,16 +162,43 @@
         charts[id].update();
     }
 
+    // Listen for language changes
+    window.addEventListener('languageChanged', (e) => {
+        const lang = e.detail.lang;
+        updateDashboardText(lang);
+        loadCharts(); // Re-load charts to apply new labels
+    });
+
+    function updateDashboardText(lang) {
+        // Update Summary Cards Headers
+        document.querySelector('#totalEnrolment').previousElementSibling.textContent = getTrans('total_enrolment');
+        document.querySelector('#totalDemo').previousElementSibling.textContent = getTrans('demo_updates');
+        document.querySelector('#totalBio').previousElementSibling.textContent = getTrans('bio_updates');
+
+        // Update Dropdown Options (State)
+        const stateSelect = document.getElementById('stateFilter');
+        Array.from(stateSelect.options).forEach(opt => {
+            if (opt.value !== 'All') {
+                // Store original value in data attribute if needed, but value is the key
+                opt.text = getStateTrans(opt.value);
+            } else {
+                opt.text = getTrans('select_state');
+            }
+        });
+
+        // Refresh summary numbers with new locale
+        loadSummary();
+    }
+
     function loadSummary() {
         const state = document.getElementById('stateFilter').value;
         const district = document.getElementById('districtFilter').value;
         fetch(`/api/data/summary?state=${state}&district=${district}`)
             .then(r => r.json())
             .then(data => {
-                document.getElementById('totalEnrolment').innerText = data.total_enrolment.toLocaleString();
-                document.getElementById('totalDemo').innerText = data.total_demographic_updates.toLocaleString();
-                document.getElementById('totalBio').innerText = data.total_biometric_updates.toLocaleString();
-                // Removed premature hideLoader()
+                document.getElementById('totalEnrolment').innerText = formatNumber(data.total_enrolment);
+                document.getElementById('totalDemo').innerText = formatNumber(data.total_demographic_updates);
+                document.getElementById('totalBio').innerText = formatNumber(data.total_biometric_updates);
             });
     }
 
@@ -174,16 +209,16 @@
         const params = `?state=${state}&district=${district}`;
 
         const chartConfigs = [
-            { id: 1, type: 'bar', label: 'Activity' },
-            { id: 2, type: 'bar', label: 'Recommended' },
-            { id: 3, type: 'line', label: '18+ Volume' },
-            { id: 4, type: 'bar', label: '0-5 Gap' },
-            { id: 5, type: 'bar', label: 'Anomalies' },
-            { id: 6, type: 'doughnut', label: 'Inclusion' },
-            { id: 7, type: 'pie', label: 'Language' },
-            { id: 8, type: 'bar', label: 'Faulty' },
-            { id: 9, type: 'line', label: 'Migration' },
-            { id: 10, type: 'bar', label: 'Footfall' }
+            { id: 1, type: 'bar', labelKey: 'chart_activity' },
+            { id: 2, type: 'bar', labelKey: 'chart_recommended' },
+            { id: 3, type: 'line', labelKey: 'chart_18_vol' },
+            { id: 4, type: 'bar', labelKey: 'chart_0_5_gap' },
+            { id: 5, type: 'bar', labelKey: 'chart_anomalies' },
+            { id: 6, type: 'doughnut', labelKey: 'chart_inclusion' },
+            { id: 7, type: 'pie', labelKey: 'chart_language' },
+            { id: 8, type: 'bar', labelKey: 'chart_faulty' },
+            { id: 9, type: 'line', labelKey: 'chart_migration' },
+            { id: 10, type: 'bar', labelKey: 'chart_footfall' }
         ];
 
         let loadedCount = 0;
@@ -191,10 +226,34 @@
             fetch(`/api/data/idea/${c.id}${params}`)
                 .then(r => r.json())
                 .then(data => {
-                    updateChart(`chart${c.id}`, data.labels, data.data);
-                    // Updated to show Govt Solution clearly
-                    const sol = data.solution.replace('GOVERNMENT SOLUTION:', '<strong>GOVT SOLUTION:</strong>');
-                    if (data.insight) document.getElementById(`desc${c.id}`).innerHTML = `<strong>Insight:</strong> ${data.insight}<br>${sol}`;
+                    const translatedLabel = getTrans(c.labelKey);
+
+                    // Update Chart Data & Label
+                    if (charts[`chart${c.id}`]) {
+                        charts[`chart${c.id}`].data.labels = data.labels;
+                        charts[`chart${c.id}`].data.datasets[0].data = data.data;
+                        charts[`chart${c.id}`].data.datasets[0].label = translatedLabel;
+                        charts[`chart${c.id}`].update();
+
+                        // Update Chart Title Card (Heading in HTML)
+                        const cardHeader = document.querySelector(`#chart${c.id}`).closest('.card').querySelector('.card-header');
+                        if (cardHeader) {
+                            // Removing badge logic for simplicity or handle if badge exists
+                            // Assuming simple text content or we check for child nodes
+                            // cardHeader.childNodes[0].textContent = translatedLabel; 
+                        }
+                    }
+
+                    // Update Insight Text
+                    const insightPrefix = getTrans('insight');
+                    const solutionPrefix = getTrans('solution');
+
+                    // Replace English prefixes with Localized prefixes
+                    let sol = data.solution.replace('GOVERNMENT SOLUTION:', `<strong>${solutionPrefix}:</strong>`);
+
+                    if (data.insight) {
+                        document.getElementById(`desc${c.id}`).innerHTML = `<strong>${insightPrefix}:</strong> ${data.insight}<br>${sol}`;
+                    }
 
                     loadedCount++;
                     if (loadedCount === chartConfigs.length) hideLoader();
@@ -215,7 +274,7 @@
             fetch(`/api/districts/${state}`)
                 .then(r => r.json())
                 .then(data => {
-                    districtSelect.innerHTML = '<option value="All">All Districts</option>';
+                    districtSelect.innerHTML = `<option value="All">${getTrans('all_districts')}</option>`;
                     data.forEach(d => {
                         districtSelect.innerHTML += `<option value="${d}">${d}</option>`;
                     });
@@ -223,7 +282,7 @@
                     loadCharts();
                 });
         } else {
-            districtSelect.innerHTML = '<option value="All">All Districts</option>';
+            districtSelect.innerHTML = `<option value="All">${getTrans('all_districts')}</option>`;
             loadSummary();
             loadCharts();
         }
@@ -250,6 +309,9 @@
 
         loadSummary();
         loadCharts();
+
+        // Initial text update
+        updateDashboardText(document.getElementById('languageSelect') ? document.getElementById('languageSelect').value : 'en');
     });
 </script>
 {% endblock %}
