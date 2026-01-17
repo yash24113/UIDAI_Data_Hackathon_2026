@@ -4,3 +4,4 @@ pandas
 fpdf
 google-generativeai
 python-dotenv
+gunicorn
