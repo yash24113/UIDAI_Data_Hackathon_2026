@@ -8,14 +8,15 @@
         <button onclick="changeFontSize('large')" id="fontLarge" class="btn btn-sm btn-outline-secondary">A+</button>
     </div>
     <div class="vr d-none d-md-block" style="height: 24px;"></div>
-    <div class="d-flex flex-column gap-2">
-        <select class="form-select form-select-sm" id="stateFilter">
+    <div class="vr d-none d-md-block" style="height: 24px;"></div>
+    <div class="d-flex align-items-center gap-2">
+        <select class="form-select form-select-sm" id="stateFilter" style="min-width: 150px;">
             <option value="All">Select State</option>
             {% for state in states %}
             <option value="{{ state }}">{{ state }}</option>
             {% endfor %}
         </select>
-        <select class="form-select form-select-sm" id="districtFilter" disabled>
+        <select class="form-select form-select-sm" id="districtFilter" disabled style="min-width: 150px;">
             <option value="All">All Districts</option>
         </select>
     </div>
@@ -77,30 +78,117 @@
     </div>
 </div>
 
+
+
+<div id="locator" class="mb-5">
+    <div class="d-flex justify-content-between align-items-end mb-4 border-bottom pb-2">
+        <h4 class="mb-0 fw-bold"><i class="fas fa-map-marker-alt text-primary me-2"></i><span
+                data-lang-key="center_locator">Aadhaar Center Locator</span></h4>
+        <button onclick="findNearestCenters()" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+            <i class="fas fa-location-arrow me-1"></i> <span data-lang-key="near_me">Find Near Me</span>
+        </button>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body p-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i
+                                class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="centerSearch" class="form-control border-start-0"
+                            placeholder="Search by area, pincode or district..." onkeyup="handleSearch(event)">
+                        <button class="btn btn-primary px-4" onclick="loadMapCenters()">Search</button>
+                    </div>
+                </div>
+            </div>
+            <div id="locator-map" class="shadow-sm border rounded-3" style="height: 500px;"></div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center py-3">
+                    <span data-lang-key="nearest_centers">Aadhaar Centers</span>
+                    <span class="badge bg-primary rounded-pill" id="centerCount">0</span>
+                </div>
+                <div class="card-body p-0 d-flex flex-column">
+                    <div id="centerList" style="max-height: 400px; overflow-y: auto;">
+                        <div class="p-4 text-center text-muted">
+                            <i class="fas fa-search-location fs-1 mb-3 opacity-25"></i>
+                            <p class="small mb-0">Use search or filters to find centers</p>
+                        </div>
+                    </div>
+                    <div id="loadMoreContainer" class="p-2 border-top text-center" style="display: none;">
+                        <button class="btn btn-sm btn-link text-decoration-none fw-bold" onclick="loadMoreCenters()">
+                            LOAD MORE <i class="fas fa-chevron-down ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="ideas">
     <div class="d-flex justify-content-between align-items-end mb-4 border-bottom pb-2">
         <h4 class="mb-0 fw-bold">Actionable Insights</h4>
-        <span class="text-muted small">Updated Real-time</span>
+        <div class="text-end">
+            <span class="text-muted small">Updated Real-time</span>
+        </div>
     </div>
 
     <div class="row g-3 g-md-4">
+        {% set icons = ['chart-bar', 'hospital-user', 'user-check', 'baby', 'shield-alt', 'wallet', 'language', 'tools',
+        'briefcase-medical', 'city'] %}
         {% for i in range(1, 11) %}
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-xl-6">
             <div class="card shadow-sm border-0 h-100 transition-hover">
                 <div
                     class="card-header bg-white border-bottom-0 py-3 d-flex justify-content-between align-items-center">
-                    <span class="badge bg-primary bg-opacity-10 text-primary border-0 px-3 py-2">Idea {{ i }}</span>
-                    <a href="/analysis/idea/{{ i }}"
-                        class="btn btn-sm btn-link text-decoration-none fw-bold p-0 text-primary">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 35px; height: 35px;">
+                            <i class="fas fa-{{ icons[i-1] }}"></i>
+                        </div>
+                        <span class="fw-bold text-dark" id="title{{ i }}">Idea {{ i }}</span>
+                    </div>
+                    <a href="/analysis/idea/{{ i }}" class="btn btn-sm btn-outline-primary border-0 fw-bold">
                         EXPLORE <i class="fas fa-arrow-right small ms-1"></i>
                     </a>
                 </div>
                 <div class="card-body pt-0">
-                    <div style="height: 250px; position: relative;" class="chart-container">
-                        <canvas id="chart{{ i }}"></canvas>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div style="height: 280px; position: relative;" class="chart-container mb-3">
+                                <canvas id="chart{{ i }}"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card-insight-section h-100 d-flex flex-column gap-2">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="reason-box high h-100">
+                                            <div class="reason-title"><i class="fas fa-arrow-up me-1"></i> <span
+                                                    data-lang-key="why_high">Why High?</span></div>
+                                            <div class="small text-muted" id="high{{ i }}">...</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="reason-box low h-100">
+                                            <div class="reason-title"><i class="fas fa-arrow-down me-1"></i> <span
+                                                    data-lang-key="why_low">Why Low?</span></div>
+                                            <div class="small text-muted" id="low{{ i }}">...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="reason-box sol-box mt-1">
+                                    <div class="reason-title text-success"><i class="fas fa-lightbulb me-1"></i> <span
+                                            data-lang-key="gov_solution">Gov Solution</span></div>
+                                    <div class="small" id="sol{{ i }}">...</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mt-3 p-3 bg-light rounded-3">
-                        <p class="text-dark mb-0 small" style="line-height: 1.6;">
+                    <div class="mt-3 p-2 bg-light rounded-3">
+                        <p class="text-dark mb-0 x-small" style="font-size: 0.8rem;">
                             <i class="fas fa-info-circle text-primary me-1"></i>
                             <span id="desc{{ i }}">Loading insight...</span>
                         </p>
@@ -116,6 +204,165 @@
 {% block scripts %}
 <script>
     let charts = {};
+    let map;
+    let markers = [];
+    const sampleCenters = [
+        { name: "Aadhaar Seva Kendra, Lal Darwaja", lat: 23.0269, lng: 72.5815, address: "Prathama Bank Building, Relief Road", phone: "1800-300-1947" },
+        { name: "ASK Navrangpura", lat: 23.0373, lng: 72.5623, address: "Mithakhali Six Roads, Navrangpura", phone: "1800-300-1947" },
+        { name: "CSC Maninagar Center", lat: 22.9975, lng: 72.6012, address: "Maninagar Crossing, East Ahmedabad", phone: "079-22145678" },
+        { name: "Digital Seva - Satellite", lat: 23.0289, lng: 72.5256, address: "Shivranjani Cross Roads, Satellite", phone: "079-26789012" },
+        { name: "ASK Chandkheda", lat: 23.1065, lng: 72.5823, address: "Visat Petrol Pump, Chandkheda", phone: "1800-300-1947" },
+        { name: "Post Office ASK, Isanpur", lat: 22.9754, lng: 72.5987, address: "Main Bazaar, Isanpur, Ahmedabad", phone: "079-25467812" },
+        { name: "Prahlad Nagar Seva Kendra", lat: 23.0125, lng: 72.5123, address: "Corporate Road, Prahlad Nagar", phone: "079-29701234" }
+    ];
+
+    let allCentersData = [];
+    let displayedCount = 0;
+    const PAGE_SIZE = 5;
+
+    function initMap() {
+        map = L.map('locator-map').setView([20.5937, 78.9629], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        loadMapCenters();
+    }
+
+    function addCenterMarker(center) {
+        const marker = L.marker([center.lat, center.lng]).addTo(map);
+        marker.bindPopup(`
+            <div class="p-1">
+                <b class="d-block mb-1">${center.name}</b>
+                <div class="small text-muted mb-2">${center.address}</div>
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${center.lat},${center.lng}" target="_blank" class="btn btn-xs btn-primary text-white w-100 py-1" style="font-size: 0.7rem;">
+                    <i class="fas fa-directions me-1"></i> Get Directions
+                </a>
+            </div>
+        `);
+        markers.push(marker);
+        return marker;
+    }
+
+    function handleSearch(e) {
+        if (e.key === 'Enter') loadMapCenters();
+    }
+
+    function updateCenterList(append = false) {
+        const list = document.getElementById('centerList');
+        const count = document.getElementById('centerCount');
+
+        if (!append) {
+            list.innerHTML = '';
+            displayedCount = 0;
+        }
+
+        const nextBatch = allCentersData.slice(displayedCount, displayedCount + PAGE_SIZE);
+
+        if (allCentersData.length === 0) {
+            list.innerHTML = `<div class="p-4 text-center text-muted">No centers found. Try a different search.</div>`;
+            document.getElementById('loadMoreContainer').style.display = 'none';
+            count.innerText = 0;
+            return;
+        }
+
+        nextBatch.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'center-item p-3 border-bottom';
+            div.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-bold small">${c.name}</div>
+                        <div class="x-small text-muted mt-1" style="font-size: 0.75rem;">${c.address}</div>
+                    </div>
+                </div>
+                <div class="mt-2 d-flex justify-content-between align-items-center">
+                    <span class="x-small text-primary" style="font-size: 0.7rem;"><i class="fas fa-phone-alt me-1"></i>${c.phone}</span>
+                    <div class="d-flex gap-2">
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}" target="_blank" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size: 0.65rem;">
+                            <i class="fas fa-directions"></i>
+                        </a>
+                        <span class="badge bg-light text-dark border" style="font-size: 0.6rem;">${c.activity} Ops</span>
+                    </div>
+                </div>
+            `;
+            div.onclick = (e) => {
+                if (e.target.closest('a')) return;
+                map.setView([c.lat, c.lng], 14);
+                markers.forEach(m => {
+                    if (m.getLatLng().lat === c.lat && m.getLatLng().lng === c.lng) m.openPopup();
+                });
+                document.querySelectorAll('.center-item').forEach(i => i.classList.remove('active'));
+                div.classList.add('active');
+            };
+            list.appendChild(div);
+        });
+
+        displayedCount += nextBatch.length;
+        count.innerText = allCentersData.length;
+
+        document.getElementById('loadMoreContainer').style.display = displayedCount < allCentersData.length ? 'block' : 'none';
+    }
+
+    function loadMoreCenters() {
+        updateCenterList(true);
+    }
+
+    function loadMapCenters() {
+        showLoader();
+        const state = document.getElementById('stateFilter').value;
+        const district = document.getElementById('districtFilter').value;
+        const query = document.getElementById('centerSearch').value;
+        const params = `?state=${state}&district=${district}&q=${query}`;
+
+        fetch(`/api/centers${params}`)
+            .then(r => r.json())
+            .then(centers => {
+                allCentersData = centers;
+                markers.forEach(m => map.removeLayer(m));
+                markers = [];
+
+                updateCenterList(false);
+                centers.forEach(c => addCenterMarker(c));
+
+                if (query || state !== 'All') {
+                    if (centers.length > 0) {
+                        const bounds = L.latLngBounds(centers.map(c => [c.lat, c.lng]));
+                        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+                    }
+                } else {
+                    map.setView([20.5937, 78.9629], 5);
+                }
+                hideLoader();
+            })
+            .catch(() => hideLoader());
+    }
+
+    function findNearestCenters() {
+        showLoader();
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const { latitude, longitude } = position.coords;
+                map.setView([latitude, longitude], 13);
+                L.circle([latitude, longitude], { radius: 2000, color: '#0d6efd', fillOpacity: 0.1 }).addTo(map);
+
+                // Filter data locally for distance
+                allCentersData.sort((a, b) => {
+                    const distA = Math.sqrt(Math.pow(a.lat - latitude, 2) + Math.pow(a.lng - longitude, 2));
+                    const distB = Math.sqrt(Math.pow(b.lat - latitude, 2) + Math.pow(b.lng - longitude, 2));
+                    return distA - distB;
+                });
+                updateCenterList(false);
+                hideLoader();
+            }, () => {
+                alert("Geolocation failed. Please use filters to find centers.");
+                hideLoader();
+            });
+        } else {
+            alert("Geolocation not supported.");
+            hideLoader();
+        }
+    }
 
     function initChart(id, type, label, bgColor) {
         const ctx = document.getElementById(id).getContext('2d');
@@ -155,38 +402,33 @@
         });
     }
 
-    function updateChart(id, labels, data) {
-        if (!charts[id]) return;
-        charts[id].data.labels = labels;
-        charts[id].data.datasets[0].data = data;
-        charts[id].update();
-    }
-
-    // Listen for language changes
     window.addEventListener('languageChanged', (e) => {
         const lang = e.detail.lang;
         updateDashboardText(lang);
-        loadCharts(); // Re-load charts to apply new labels
+        loadCharts();
     });
 
     function updateDashboardText(lang) {
-        // Update Summary Cards Headers
+        // Update data-lang-key elements
+        document.querySelectorAll('[data-lang-key]').forEach(el => {
+            const key = el.getAttribute('data-lang-key');
+            const trans = getTrans(key);
+            if (trans) el.textContent = trans;
+        });
+
         document.querySelector('#totalEnrolment').previousElementSibling.textContent = getTrans('total_enrolment');
         document.querySelector('#totalDemo').previousElementSibling.textContent = getTrans('demo_updates');
         document.querySelector('#totalBio').previousElementSibling.textContent = getTrans('bio_updates');
 
-        // Update Dropdown Options (State)
         const stateSelect = document.getElementById('stateFilter');
         Array.from(stateSelect.options).forEach(opt => {
             if (opt.value !== 'All') {
-                // Store original value in data attribute if needed, but value is the key
                 opt.text = getStateTrans(opt.value);
             } else {
                 opt.text = getTrans('select_state');
             }
         });
 
-        // Refresh summary numbers with new locale
         loadSummary();
     }
 
@@ -228,41 +470,48 @@
                 .then(data => {
                     const translatedLabel = getTrans(c.labelKey);
 
-                    // Update Chart Data & Label
                     if (charts[`chart${c.id}`]) {
                         charts[`chart${c.id}`].data.labels = data.labels;
                         charts[`chart${c.id}`].data.datasets[0].data = data.data;
                         charts[`chart${c.id}`].data.datasets[0].label = translatedLabel;
                         charts[`chart${c.id}`].update();
-
-                        // Update Chart Title Card (Heading in HTML)
-                        const cardHeader = document.querySelector(`#chart${c.id}`).closest('.card').querySelector('.card-header');
-                        if (cardHeader) {
-                            // Removing badge logic for simplicity or handle if badge exists
-                            // Assuming simple text content or we check for child nodes
-                            // cardHeader.childNodes[0].textContent = translatedLabel; 
-                        }
                     }
 
-                    // Update Insight Text
+                    // Update New Structured Fields
+                    document.getElementById(`title${c.id}`).innerText = data.title;
+                    document.getElementById(`high${c.id}`).innerText = data.reasons_high || "N/A";
+                    document.getElementById(`low${c.id}`).innerText = data.reasons_low || "N/A";
+
+                    const solPrefix = getTrans('gov_solution');
+                    document.getElementById(`sol${c.id}`).innerHTML = `<b>${solPrefix}:</b> ${data.solution.replace('GOV SOLUTION:', '').replace('GOVERNMENT SOLUTION:', '')}`;
+
                     const insightPrefix = getTrans('insight');
-                    const solutionPrefix = getTrans('solution');
-
-                    // Replace English prefixes with Localized prefixes
-                    let sol = data.solution.replace('GOVERNMENT SOLUTION:', `<strong>${solutionPrefix}:</strong>`);
-
                     if (data.insight) {
-                        document.getElementById(`desc${c.id}`).innerHTML = `<strong>${insightPrefix}:</strong> ${data.insight}<br>${sol}`;
+                        document.getElementById(`desc${c.id}`).innerHTML = `<strong>${insightPrefix}:</strong> ${data.insight}`;
                     }
 
                     loadedCount++;
-                    if (loadedCount === chartConfigs.length) hideLoader();
+                    if (loadedCount === chartConfigs.length) {
+                        hideLoader();
+                        checkAutoExport();
+                    }
                 })
                 .catch(() => {
                     loadedCount++;
-                    if (loadedCount === chartConfigs.length) hideLoader();
+                    if (loadedCount === chartConfigs.length) {
+                        hideLoader();
+                        checkAutoExport();
+                    }
                 });
         });
+    }
+
+    function checkAutoExport() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('auto_export') === 'true') {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setTimeout(exportFullReport, 500);
+        }
     }
 
     document.getElementById('stateFilter').addEventListener('change', function () {
@@ -271,6 +520,7 @@
         districtSelect.innerHTML = '<option value="All">Loading...</option>';
 
         if (state !== "All") {
+            districtSelect.disabled = false;
             fetch(`/api/districts/${state}`)
                 .then(r => r.json())
                 .then(data => {
@@ -280,20 +530,25 @@
                     });
                     loadSummary();
                     loadCharts();
+                    loadMapCenters();
                 });
         } else {
+            districtSelect.disabled = true;
             districtSelect.innerHTML = `<option value="All">${getTrans('all_districts')}</option>`;
             loadSummary();
             loadCharts();
+            loadMapCenters();
         }
     });
 
     document.getElementById('districtFilter').addEventListener('change', () => {
         loadSummary();
         loadCharts();
+        loadMapCenters();
     });
 
     document.addEventListener("DOMContentLoaded", function () {
+        initMap();
         const colors = [
             'rgba(13, 110, 253, 0.6)', 'rgba(25, 135, 84, 0.6)', 'rgba(108, 117, 125, 0.6)',
             'rgba(220, 53, 69, 0.6)', 'rgba(13, 202, 240, 0.6)', 'rgba(102, 16, 242, 0.6)',
@@ -309,8 +564,6 @@
 
         loadSummary();
         loadCharts();
-
-        // Initial text update
         updateDashboardText(document.getElementById('languageSelect') ? document.getElementById('languageSelect').value : 'en');
     });
 </script>

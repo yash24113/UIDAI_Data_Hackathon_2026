@@ -351,24 +351,63 @@
         const params = `?state=${state}&district=${district}`;
 
         // Update Export Links
-        document.getElementById('exportPdfBtn').href = `/export/idea/${ideaId}${params}`;
         document.getElementById('exportCsvBtn').href = `/export/idea/csv/${ideaId}${params}`;
+
+        // Setup PDF Export with Chart Capture
+        document.getElementById('exportPdfBtn').onclick = async function (e) {
+            e.preventDefault();
+            showLoader();
+
+            const formData = new FormData();
+            formData.append('state', state);
+            formData.append('district', district);
+
+            const canvas = document.getElementById('mainChart');
+            if (canvas) {
+                formData.append('chart_image', canvas.toDataURL('image/png', 0.8));
+            }
+
+            try {
+                const resp = await fetch(`/export/idea/${ideaId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const blob = await resp.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Idea_${ideaId}_Analysis_Report.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error(err);
+                alert('Export failed. Please try again.');
+            } finally {
+                hideLoader();
+            }
+        };
 
         fetch(`/api/data/idea/${ideaId}${params}`)
             .then(r => r.json())
             .then(data => {
-<<<<<<< HEAD
-                currentData = data; // Store for switching
-=======
-                document.getElementById('problemText').innerText = data.problem;
-                document.getElementById('insightText').innerText = data.insight;
-                document.getElementById('reasonsHigh').innerText = data.reasons_high || "N/A";
-                document.getElementById('reasonsLow').innerText = data.reasons_low || "N/A";
-                document.getElementById('solutionText').innerText = data.solution;
->>>>>>> df97a38a37344c727cf7e84505d8d0d83f2439d0
+                currentData = data;
 
-                // Init with current language
-                const lang = document.getElementById('languageSelect').value || 'en';
+                // Populate elements from API response
+                const problemEl = document.getElementById('problemText');
+                const insightEl = document.getElementById('insightText');
+                const highEl = document.getElementById('reasonsHigh');
+                const lowEl = document.getElementById('reasonsLow');
+                const solutionEl = document.getElementById('solutionText');
+
+                if (problemEl) problemEl.innerText = data.problem || "Problem statement loading...";
+                if (insightEl) insightEl.innerText = data.insight || "Insight loading...";
+                if (highEl) highEl.innerText = data.reasons_high || "N/A";
+                if (lowEl) lowEl.innerText = data.reasons_low || "N/A";
+                if (solutionEl) solutionEl.innerText = data.solution || "Solution loading...";
+
+                // Localized text update
+                const lang = document.getElementById('languageSelect') ? document.getElementById('languageSelect').value : (currentLang || 'en');
                 updateContent(lang);
                 initChart(data.labels, data.data);
 

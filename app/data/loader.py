@@ -75,7 +75,33 @@ class DataLoader:
     def _clean_common_columns(self, df):
         # Standardize State/District names (Title Case, strip whitespace)
         if 'state' in df.columns:
-            df['state'] = df['state'].astype(str).str.strip().str.title()
+            # canonical mapping (stripped of spaces and lowercase)
+            canonical_map = {
+                "westbengal": "West Bengal",
+                "uttarpradesh": "Uttar Pradesh",
+                "andhrapradesh": "Andhra Pradesh",
+                "tamilnadu": "Tamil Nadu",
+                "telangana": "Telangana",
+                "telengana": "Telangana",
+                "chhattisgarh": "Chhattisgarh",
+                "chattisgarh": "Chhattisgarh",
+                "madhyapradesh": "Madhya Pradesh",
+                "arunachalpradesh": "Arunachal Pradesh",
+                "himachalpradesh": "Himachal Pradesh",
+                "jk": "Jammu And Kashmir",
+                "jammuandkashmir": "Jammu And Kashmir",
+                "dadraandnagarhavelianddamananddiu": "Dadra And Nagar Haveli And Daman And Diu",
+                "dnhanddd": "Dadra And Nagar Haveli And Daman And Diu"
+            }
+            
+            def standardize(val):
+                val = str(val).strip().lower()
+                # Remove spaces, dots, dashes for comparison
+                clean = "".join(c for c in val if c.isalnum())
+                return canonical_map.get(clean, val.title())
+
+            df['state'] = df['state'].apply(standardize)
+
         if 'district' in df.columns:
             df['district'] = df['district'].astype(str).str.strip().str.title()
         

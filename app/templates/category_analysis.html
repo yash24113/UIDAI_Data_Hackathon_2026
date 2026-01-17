@@ -59,35 +59,53 @@
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white py-3 border-0">
-                <h6 class="mb-0 fw-bold text-success"><i class="fas fa-arrow-up me-2"></i>Top Performer</h6>
+        <!-- Performers Cards -->
+        <div class="card shadow-sm border-0 mb-4 overflow-hidden performer-card">
+            <div class="card-header bg-success text-white py-2 border-0 d-flex align-items-center">
+                <i class="fas fa-trophy me-2"></i>
+                <h6 class="mb-0 fw-bold small text-uppercase">Top Performer</h6>
             </div>
-            <div class="card-body bg-light">
+            <div class="card-body bg-white border-start border-success border-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0 fw-bold" id="topName">Loading...</h5>
-                    <span class="badge bg-success" id="topValue">...</span>
+                    <h5 class="mb-0 fw-bold text-dark" id="topName">Loading...</h5>
+                    <div class="text-end">
+                        <span
+                            class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-2"
+                            id="topValue">...</span>
+                    </div>
                 </div>
-                <p class="small text-muted mb-0" id="topReason">...</p>
+                <div class="d-flex align-items-start gap-2 mt-3">
+                    <i class="fas fa-quote-left text-success opacity-25 mt-1"></i>
+                    <p class="small text-muted mb-0 fst-italic lh-sm" id="topReason" style="font-size: 0.85rem;">...</p>
+                </div>
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white py-3 border-0">
-                <h6 class="mb-0 fw-bold text-danger"><i class="fas fa-arrow-down me-2"></i>Bottom Performer</h6>
+        <div class="card shadow-sm border-0 mb-4 overflow-hidden performer-card">
+            <div class="card-header bg-danger text-white py-2 border-0 d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <h6 class="mb-0 fw-bold small text-uppercase">Bottom Performer</h6>
             </div>
-            <div class="card-body bg-light">
+            <div class="card-body bg-white border-start border-danger border-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0 fw-bold" id="bottomName">Loading...</h5>
-                    <span class="badge bg-danger" id="bottomValue">...</span>
+                    <h5 class="mb-0 fw-bold text-dark" id="bottomName">Loading...</h5>
+                    <div class="text-end">
+                        <span
+                            class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3 py-2"
+                            id="bottomValue">...</span>
+                    </div>
                 </div>
-                <p class="small text-muted mb-0" id="bottomReason">...</p>
+                <div class="d-flex align-items-start gap-2 mt-3">
+                    <i class="fas fa-quote-left text-danger opacity-25 mt-1"></i>
+                    <p class="small text-muted mb-0 fst-italic lh-sm" id="bottomReason" style="font-size: 0.85rem;">...
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Main Chart & Solution -->
-    <div class="col-12 col-lg-8 order-lg-1">
+    <div class="col-12 col-lg-8 order-lg-1 ">
         <!-- Government Solution -->
         <div class="alert alert-success border-0 shadow-sm d-flex align-items-start gap-3 mb-4" role="alert">
             <i class="fas fa-university fs-4 mt-1"></i>
@@ -97,12 +115,63 @@
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 h-100 p-2 p-md-4">
+        <div class="card shadow-sm border-0 p-2 p-md-4">
             <div class="card-body">
-                <h5 class="card-title text-muted mb-4 small text-uppercase fw-bold">Regional Distribution</h5>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title text-muted small text-uppercase fw-bold mb-0">Regional Distribution</h5>
+                    <span class="badge bg-light text-muted fw-normal"><i class="fas fa-mouse-pointer me-1"></i>Click
+                        bars for deep analysis</span>
+                </div>
                 <div style="height: 400px; position: relative;">
                     <canvas id="stateChart"></canvas>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Regional Analysis Modal -->
+<div class="modal fade" id="analysisModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0 py-3">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-microchip me-2"></i>AI Regional Insights: <span id="modalRegionName">...</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-white rounded shadow-sm border-start border-primary border-4">
+                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Total Volume</small>
+                            <h4 class="fw-bold mb-0 text-primary" id="modalTotal">...</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="p-3 bg-white rounded shadow-sm">
+                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Age Distribution</small>
+                            <div class="progress" style="height: 10px;">
+                                <div id="bar05" class="progress-bar bg-info" role="progressbar" title="0-5 Years"></div>
+                                <div id="bar517" class="progress-bar bg-primary" role="progressbar" title="5-17 Years">
+                                </div>
+                                <div id="bar18" class="progress-bar bg-dark" role="progressbar" title="18+ Years"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="geminiLoader" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Aadhaar Sahayak is analyzing data...</p>
+                </div>
+                <div id="analysisContent" class="markdown-body p-3 bg-white rounded shadow-sm"
+                    style="display: none; max-height: 400px; overflow-y: auto;">
+                    <!-- Gemini response will be injected here -->
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -146,10 +215,6 @@
         const district = document.getElementById('districtFilter').value;
         const params = `?state=${state}&district=${district}`;
 
-        // Update Export Links
-        document.getElementById('btnExportCSV').href = `/export/category/csv/${categoryName}${params}`;
-        document.getElementById('btnExportPDF').href = `/export/category/pdf/${categoryName}${params}`;
-
         fetch(`/api/data/category/${categoryName}${params}`)
             .then(r => r.json())
             .then(data => {
@@ -185,6 +250,98 @@
                 hideLoader();
             });
     }
+
+    // Interactive Chart Clicks
+    document.getElementById('stateChart').onclick = function (evt) {
+        const points = myChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+        if (points.length) {
+            const firstPoint = points[0];
+            const label = myChart.data.labels[firstPoint.index];
+            openAnalysisModal(label);
+        }
+    };
+
+    function openAnalysisModal(region) {
+        const modal = new bootstrap.Modal(document.getElementById('analysisModal'));
+        document.getElementById('modalRegionName').innerText = region;
+        document.getElementById('modalTotal').innerText = "...";
+        document.getElementById('geminiLoader').style.display = 'block';
+        document.getElementById('analysisContent').style.display = 'none';
+
+        modal.show();
+
+        const formData = new FormData();
+        formData.append('category', categoryName);
+        formData.append('region', region);
+        formData.append('state', document.getElementById('stateFilter').value);
+        formData.append('district', document.getElementById('districtFilter').value);
+
+        fetch('/api/analysis/regional', {
+            method: 'POST',
+            body: formData
+        })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('geminiLoader').style.display = 'none';
+                document.getElementById('analysisContent').style.display = 'block';
+
+                if (data.error) {
+                    document.getElementById('analysisContent').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    return;
+                }
+
+                // Update Progress Bars
+                const metrics = data.data.metrics;
+                const total = data.data.total;
+                document.getElementById('modalTotal').innerText = total.toLocaleString();
+
+                const p05 = (metrics.age_0_5 / total * 100);
+                const p517 = (metrics.age_5_17 / total * 100);
+                const p18 = (metrics.age_18_above / total * 100);
+
+                document.getElementById('bar05').style.width = p05 + '%';
+                document.getElementById('bar517').style.width = p517 + '%';
+                document.getElementById('bar18').style.width = p18 + '%';
+
+                // Format Markdown (Simple)
+                let formatted = data.analysis.replace(/\n\n/g, '<br><br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                document.getElementById('analysisContent').innerHTML = formatted;
+            });
+    }
+
+    // PDF Export with Image
+    document.getElementById('btnExportPDF').onclick = function (e) {
+        e.preventDefault();
+        showLoader();
+
+        const canvas = document.getElementById('stateChart');
+        const chartImg = canvas.toDataURL('image/png', 1.0);
+
+        const formData = new FormData();
+        formData.append('state', document.getElementById('stateFilter').value);
+        formData.append('district', document.getElementById('districtFilter').value);
+        formData.append('chart_image', chartImg);
+
+        fetch(`/export/category/pdf/${categoryName}`, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${categoryName}_Full_Analytics_Report.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                hideLoader();
+            })
+            .catch(err => {
+                console.error(err);
+                hideLoader();
+            });
+    };
 
     document.getElementById('stateFilter').addEventListener('change', function () {
         const state = this.value;

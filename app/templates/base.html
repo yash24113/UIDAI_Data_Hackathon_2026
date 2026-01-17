@@ -7,7 +7,7 @@
     <title>UIDAI Analytics Dashboard 2026</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/fingerprint.png') }}" sizes="32x32">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/fingerprint.png') }}" sizes="16x16">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/image.png') }}" sizes="16x16">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/fingerprint.png') }}">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,6 +19,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Lottie Player -->
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --sidebar-width: 280px;
@@ -227,26 +230,34 @@
         }
 
         .sidebar-link {
-            padding: 12px 24px;
+            padding: 14px 24px;
             color: #adb5bd;
             text-decoration: none;
             display: flex;
             align-items: center;
-            transition: all 0.2s;
+            gap: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 4px solid transparent;
-        }
-
-        .sidebar-link:hover,
-        .sidebar-link.active {
-            background: rgba(13, 110, 253, 0.1);
-            color: #fff;
-            border-left-color: var(--primary-color);
+            margin: 2px 0;
         }
 
         .sidebar-link i {
             width: 20px;
-            margin-right: 12px;
+            text-align: center;
             font-size: 1.1rem;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            padding-left: 28px;
+        }
+
+        .sidebar-link.active {
+            background: rgba(13, 110, 253, 0.15);
+            color: #fff;
+            border-left-color: var(--primary-color);
+            font-weight: 600;
         }
 
         #page-content-wrapper {
@@ -421,17 +432,28 @@
 
         /* Top Toolbar */
         .top-toolbar {
-            background: #fff;
-            padding: 5px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 8px 24px;
             border-bottom: 1px solid #eee;
             display: flex;
             justify-content: flex-end;
             align-items: center;
             gap: 20px;
             font-size: 14px;
-            z-index: 1030;
+            z-index: 1040;
             position: sticky;
-            top: 4px;
+            top: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        }
+
+        .navbar.sticky-top {
+            top: 40px;
+            /* Offset for top toolbar */
+            z-index: 1030;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #eee;
         }
 
         .toolbar-item {
@@ -562,6 +584,35 @@
             background: #3e00cc;
         }
 
+        /* Performer Cards Styling */
+        .performer-card {
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-radius: 12px !important;
+        }
+
+        .performer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .performer-card .card-header {
+            letter-spacing: 1px;
+            font-size: 0.75rem;
+        }
+
+        .performer-card .badge {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .bg-success-subtle {
+            background-color: #f0fff4 !important;
+        }
+
+        .bg-danger-subtle {
+            background-color: #fff5f5 !important;
+        }
+
         /* Dark Mode Contrast */
         body.dark-contrast {
             background-color: #000 !important;
@@ -588,6 +639,77 @@
 
         body.big-cursor * {
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="black"><path d="M7 2l12 11.2l-5.8.1l3.3 5.3l-2.2 1.4l-3.2-5.1L7 19z"/></svg>'), auto !important;
+        }
+
+        custom-height {
+            height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            custom-height {
+                height: 950px;
+            }
+        }
+
+        /* Dashbaord Enhancements */
+        .card-insight-section {
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .reason-box {
+            padding: 10px;
+            border-radius: 10px;
+            background: #fdfdfd;
+            border-left: 4px solid #dee2e6;
+            transition: all 0.2s;
+        }
+
+        .reason-box:hover {
+            background: #f8f9fa;
+        }
+
+        .reason-box.high {
+            border-left-color: #0d6efd;
+        }
+
+        .reason-box.low {
+            border-left-color: #6c757d;
+        }
+
+        .reason-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .sol-box {
+            background: #eefdf5;
+            border: 1px dashed #198754;
+            color: #146c43;
+        }
+
+        #locator-map {
+            height: 450px;
+            border-radius: 15px;
+            z-index: 1;
+        }
+
+        .center-item {
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #eee;
+        }
+
+        .center-item:hover {
+            background: #f8f9fa;
+        }
+
+        .center-item.active {
+            background: #e7f1ff;
+            border-left: 4px solid #0d6efd;
         }
     </style>
 </head>
@@ -620,27 +742,36 @@
         <!-- Sidebar -->
         <div id="sidebar-wrapper">
             <div class="sidebar-heading">
-                <i class="fas fa-fingerprint me-2"></i>UIDAI 2026
+                <i class="fas fa-fingerprint me-2 text-primary"></i>UIDAI 2026
             </div>
             <div class="list-group list-group-flush mt-3">
-                <a href="/" class="sidebar-link active"><i class="fas fa-th-large"></i> Overview</a>
-                <a href="/#ideas" class="sidebar-link"><i class="fas fa-lightbulb"></i> Ideas Analysis</a>
+                <a href="/" class="sidebar-link active" data-lang-key="overview">
+                    <i class="fas fa-th-large"></i> <span>Overview</span>
+                </a>
+                <a href="/#ideas" class="sidebar-link" data-lang-key="ideas">
+                    <i class="fas fa-lightbulb"></i> <span>Ideas Analysis</span>
+                </a>
 
                 <div class="px-4 mt-4 mb-2">
                     <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Categories</small>
                 </div>
-                <a href="/analysis/category/enrolment" class="sidebar-link"><i class="fas fa-user-plus"></i>
-                    Enrolment</a>
-                <a href="/analysis/category/demographic" class="sidebar-link"><i class="fas fa-id-card"></i>
-                    Demographic</a>
-                <a href="/analysis/category/biometric" class="sidebar-link"><i class="fas fa-fingerprint"></i>
-                    Biometric</a>
+                <a href="/analysis/category/enrolment" class="sidebar-link" data-lang-key="enrolment">
+                    <i class="fas fa-user-plus"></i> <span>Enrolment</span>
+                </a>
+                <a href="/analysis/category/demographic" class="sidebar-link" data-lang-key="demographic">
+                    <i class="fas fa-id-card"></i> <span>Demographic</span>
+                </a>
+                <a href="/analysis/category/biometric" class="sidebar-link" data-lang-key="biometric">
+                    <i class="fas fa-fingerprint"></i> <span>Biometric</span>
+                </a>
 
                 <div class="px-4 mt-4 mb-2">
                     <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Tools</small>
                 </div>
-                <a href="{{ url_for('export_report') }}" class="sidebar-link text-danger fw-bold"><i
-                        class="fas fa-file-pdf"></i> Full Report</a>
+                <a href="javascript:void(0)" onclick="exportFullReport()" class="sidebar-link text-danger fw-bold"
+                    data-lang-key="full_report">
+                    <i class="fas fa-file-pdf"></i> <span>Full Report</span>
+                </a>
             </div>
         </div>
 
@@ -648,7 +779,6 @@
         <div id="page-content-wrapper">
             <!-- Top Toolbar from Image -->
             <div class="top-toolbar">
-                <a href="#main-content" class="toolbar-item d-none d-md-block">Skip to main content</a>
                 <span class="toolbar-divider d-none d-md-block">|</span>
                 <span class="toolbar-item" title="Calendar"><i class="far fa-calendar-alt"></i></span>
                 <span class="toolbar-divider">|</span>
@@ -674,27 +804,28 @@
                         <i class="fas fa-bars"></i>
                     </button>
 
-                    <h5 class="mb-0 fw-bold d-none d-sm-block">Analytics Dashboard</h5>
+                    <h5 class="mb-0 fw-bold d-none d-sm-block" data-lang-key="title">Analytics Dashboard</h5>
 
                     <div class="ms-auto nav-filters align-items-center">
                         {% block filters %}{% endblock %}
                         <a href="#" id="globalExportBtn" class="btn btn-primary shadow-sm hover-scale ms-md-2"
                             title="Export Filtered Dataset">
-                            <i class="fas fa-file-export me-1"></i> <span class="d-none d-md-inline">Dataset</span>
+                            <i class="fas fa-file-export me-1"></i> <span class="d-none d-md-inline"
+                                data-lang-key="dataset_btn">Dataset</span>
                         </a>
                     </div>
                 </div>
             </nav>
 
-            <div class="container-fluid p-3 p-md-4">
+            <div class="custom-height container-fluid p-3 p-md-4">
                 {% block content %}{% endblock %}
             </div>
 
             <footer class="bg-dark text-white pt-5 pb-4">
                 <div class="container-fluid px-3 px-md-4">
-                    <div class="row g-4">
+                    <div class="row justify-content-between g-4">
                         <!-- Government Branding -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-5 mb-4">
                             <div class="d-flex align-items-center mb-3">
                                 <img src="https://upload.wikimedia.org/wikipedia/en/c/cf/Aadhaar_Logo.svg"
                                     alt="UIDAI Logo" class="me-2 bg-white rounded p-1"
@@ -707,16 +838,39 @@
                             <p class="text-white-50 mb-0">વધુ સારા શાસન માટે પગલાં લેવા યોગ્ય આંતરદ્રષ્ટિ</p>
                         </div>
 
+
+
+
+                        <!-- Quick Links -->
+                        <div class="col-md-3 mb-4">
+                            <h6 class="text-uppercase fw-bold mb-3" data-lang-key="quick_links">Quick Links</h6>
+                            <ul class="list-unstyled small">
+                                <li class="mb-2"><a href="/analysis/category/enrolment"
+                                        class="text-white-50 text-decoration-none hover-white"
+                                        data-lang-key="enrolment">Enrolment Analysis</a></li>
+                                <li class="mb-2"><a href="/analysis/category/demographic"
+                                        class="text-white-50 text-decoration-none hover-white"
+                                        data-lang-key="demographic">Demographic Analysis</a></li>
+                                <li class="mb-2"><a href="/analysis/category/biometric"
+                                        class="text-white-50 text-decoration-none hover-white"
+                                        data-lang-key="biometric">Biometric Analysis</a></li>
+                                <li class="mb-2"><a href="/#locator"
+                                        class="text-white-50 text-decoration-none hover-white"
+                                        data-lang-key="center_locator">Aadhaar Center Locator</a></li>
+                            </ul>
+                        </div>
+
                         <!-- Contact Info -->
-                        <div class="col-md-6 mb-4 text-md-end">
-                            <h6 class="text-uppercase fw-bold mb-3">Contact Hackathon Support</h6>
+                        <div class="col-md-4 mb-4 text-md-end">
+                            <h6 class="text-uppercase fw-bold mb-3" data-lang-key="contact_support">Contact Hackathon
+                                Support</h6>
                             <address class="text-white-50 small">
                                 <p class="mb-2">
-                                    <i class="fas fa-map-marker-alt me-2"></i>
-                                    New Delhi, 110001
+                                    <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                    Isanpur, Ahmedabad 382443
                                 </p>
                                 <p class="mb-2">
-                                    <i class="fas fa-envelope me-2"></i>
+                                    <i class="fas fa-envelope me-2 text-primary"></i>
                                     <a href="mailto:hackathon@uidai.gov.in"
                                         class="text-white-50 text-decoration-none hover-white">hackathon@uidai.gov.in</a>
                                 </p>
@@ -749,13 +903,12 @@
                                 All Rights Reserved.
                             </p>
                         </div>
-                        <div class="col-md-6 text-center text-md-end">
-                            <div class="d-flex justify-content-md-end justify-content-center gap-3">
-                                <a href="https://www.india.gov.in/"
-                                    class="text-white-50 text-decoration-none small hover-white" target="_blank">
-                                    <img src="https://www.india.gov.in/sites/upload_files/npi/files/emblem_1.png"
-                                        alt="National Portal of India" style="height: 20px;" class="me-1">
-                                    India.gov.in
+                        <div class="col-md-6 text-center text-md-end justify-content-center align-items-center">
+                            <div class=" d-flex justify-content-md-end justify-content-center gap-3">
+                                <a href="http://data.gov.in/"
+                                    class=" text-white-50 text-decoration-none small hover-white" target="_blank">
+                                    <img src="https://static2.india.gov.in/npiprod/uploads/data_gov_db30b5076a.png"
+                                        alt="National Portal of India" style="height: 50px;" class="me-1">
                                 </a>
                                 <a href="https://www.digitalindia.gov.in/"
                                     class="text-white-50 text-decoration-none small hover-white" target="_blank">
@@ -785,613 +938,671 @@
                             <a href="/accessibility" class="text-white-50 text-decoration-none hover-white">
                                 <i class="fas fa-universal-access me-1"></i> Accessibility
                             </a>
-                            <a href="/sitemap" class="text-white-50 text-decoration-none hover-white">
-                                <i class="fas fa-sitemap me-1"></i> Sitemap
-                            </a>
                         </div>
                     </div>
-                </div>
             </footer>
             <button id="scrollTop" title="Go to top">
                 <i class="fas fa-arrow-up"></i>
             </button>
         </div>
-    </div>
 
-    <!-- Accessibility Modal -->
-    <div class="modal fade" id="accessibilityModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header-custom">
-                    <h5 class="modal-title">Accessibility Tools</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="acc-section-title">Color Adjustment</div>
-                    <div class="acc-grid">
-                        <div class="acc-btn" onclick="toggleColor('dark')">
-                            <i class="fas fa-moon"></i>
-                            <span>Dark Contrast</span>
-                        </div>
-                        <div class="acc-btn active" onclick="toggleColor('normal')">
-                            <i class="fas fa-sun"></i>
-                            <span>Normal</span>
-                        </div>
+        <!-- Accessibility Modal -->
+        <div class="modal fade" id="accessibilityModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header-custom">
+                        <h5 class="modal-title">Accessibility Tools</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
+                    <div class="modal-body">
+                        <div class="acc-section-title">Color Adjustment</div>
+                        <div class="acc-grid">
+                            <div class="acc-btn" onclick="toggleColor('dark')">
+                                <i class="fas fa-moon"></i>
+                                <span>Dark Contrast</span>
+                            </div>
+                            <div class="acc-btn active" onclick="toggleColor('normal')">
+                                <i class="fas fa-sun"></i>
+                                <span>Normal</span>
+                            </div>
+                        </div>
 
-                    <div class="acc-section-title">Text Size</div>
-                    <div class="acc-grid">
-                        <div class="acc-btn" onclick="changeFontSize('large')">
-                            <i class="fas fa-chevron-up"></i>
-                            <span>Increase Text</span>
+                        <div class="acc-section-title">Text Size</div>
+                        <div class="acc-grid">
+                            <div class="acc-btn" onclick="changeFontSize('large')">
+                                <i class="fas fa-chevron-up"></i>
+                                <span>Increase Text</span>
+                            </div>
+                            <div class="acc-btn" onclick="changeFontSize('small')">
+                                <i class="fas fa-chevron-down"></i>
+                                <span>Decrease Text</span>
+                            </div>
+                            <div class="acc-btn" onclick="changeFontSize('normal')">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Reset Text</span>
+                            </div>
+                            <div class="acc-btn">
+                                <i class="fas fa-text-height"></i>
+                                <span>Text Spacing</span>
+                            </div>
+                            <div class="acc-btn">
+                                <i class="fas fa-align-left"></i>
+                                <span>Line Height</span>
+                            </div>
                         </div>
-                        <div class="acc-btn" onclick="changeFontSize('small')">
-                            <i class="fas fa-chevron-down"></i>
-                            <span>Decrease Text</span>
-                        </div>
-                        <div class="acc-btn" onclick="changeFontSize('normal')">
-                            <i class="fas fa-sync-alt"></i>
-                            <span>Reset Text</span>
-                        </div>
-                        <div class="acc-btn">
-                            <i class="fas fa-text-height"></i>
-                            <span>Text Spacing</span>
-                        </div>
-                        <div class="acc-btn">
-                            <i class="fas fa-align-left"></i>
-                            <span>Line Height</span>
-                        </div>
-                    </div>
 
-                    <div class="acc-section-title">Others</div>
-                    <div class="acc-grid">
-                        <div class="acc-btn" onclick="toggleMisc('hide-images')">
-                            <i class="far fa-image"></i>
-                            <span>Hide Images</span>
-                        </div>
-                        <div class="acc-btn" onclick="toggleMisc('big-cursor')">
-                            <i class="fas fa-mouse-pointer"></i>
-                            <span>Big Cursor</span>
-                        </div>
-                        <div class="acc-btn">
-                            <i class="fas fa-volume-up"></i>
-                            <span>Screen Reader</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Language Modal -->
-    <div class="modal fade" id="languageModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header-custom text-center">
-                    <h5 class="modal-title w-100">Select Language</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="lang-grid">
-                        <div class="lang-btn active" onclick="changeLanguage('en')">
-                            <span>English</span>
-                        </div>
-                        <div class="lang-btn" onclick="changeLanguage('hi')">
-                            <span>Hindi</span>
-                            <span>हिन्दी</span>
-                        </div>
-                        <div class="lang-btn" onclick="changeLanguage('gu')">
-                            <span>Gujarati</span>
-                            <span>ગુજરાતી</span>
-                        </div>
-                        <div class="lang-btn" onclick="changeLanguage('pa')">
-                            <span>Punjabi</span>
-                            <span>ਪੰਜਾਬી</span>
-                        </div>
-                        <div class="lang-btn" onclick="changeLanguage('mr')">
-                            <span>Marathi</span>
-                            <span>मराठी</span>
-                        </div>
-                        <div class="lang-btn" onclick="changeLanguage('ta')">
-                            <span>Tamil</span>
-                            <span>தமிழ்</span>
-                        </div>
-                        <div class="lang-btn" onclick="changeLanguage('te')">
-                            <span>Telugu</span>
-                            <span>తెలుగు</span>
-                        </div>
-                        <div class="lang-btn" onclick="changeLanguage('kn')">
-                            <span>Kannada</span>
-                            <span>ಕನ್ನಡ</span>
+                        <div class="acc-section-title">Others</div>
+                        <div class="acc-grid">
+                            <div class="acc-btn" onclick="toggleMisc('hide-images')">
+                                <i class="far fa-image"></i>
+                                <span>Hide Images</span>
+                            </div>
+                            <div class="acc-btn" onclick="toggleMisc('big-cursor')">
+                                <i class="fas fa-mouse-pointer"></i>
+                                <span>Big Cursor</span>
+                            </div>
+                            <div class="acc-btn">
+                                <i class="fas fa-volume-up"></i>
+                                <span>Screen Reader</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // --- Accessibility & Localization Logic ---
-        const translations = {
-            'en': {
-                'title': 'Analytics Dashboard',
-                'analyzing': 'Analyzing UIDAI Data...',
-                'synthesizing': 'Synthesizing insights for 2026',
-                'footer_title': 'UIDAI Data Hackathon 2026',
-                'footer_text': 'Actionable Insights for Better Governance',
-                'select_state': 'Select State',
-                'all_districts': 'All Districts',
-                'overview': 'Overview',
-                'ideas': 'Ideas Analysis',
-                'enrolment': 'Enrolment',
-                'demographic': 'Demographic',
-                'biometric': 'Biometric',
-                'full_report': 'Full Report',
-                'total_enrolment': 'Total Enrolment',
-                'demo_updates': 'Demographic Updates',
-                'bio_updates': 'Biometric Updates',
-                'insight': 'Insight',
-                'solution': 'GOVT SOLUTION',
-                'chart_activity': 'Activity',
-                'chart_recommended': 'Recommended',
-                'chart_18_vol': '18+ Volume',
-                'chart_0_5_gap': '0-5 Gap',
-                'chart_anomalies': 'Anomalies',
-                'chart_inclusion': 'Inclusion',
-                'chart_language': 'Language',
-                'chart_faulty': 'Faulty',
-                'chart_migration': 'Migration',
-                'chart_footfall': 'Footfall'
-            },
-            'hi': {
-                'title': 'एनालिटिक्स डैशबोर्ड',
-                'analyzing': 'यूआईडीएआई डेटा का विश्लेषण...',
-                'synthesizing': '2026 के लिए अंतर्दृष्टि का संश्लेषण',
-                'footer_title': 'यूआईडीएआई डेटा हैकथॉन 2026',
-                'footer_text': 'बेहतर शासन के लिए कार्रवाई योग्य अंतर्दृष्टि',
-                'select_state': 'राज्य चुनें',
-                'all_districts': 'सभी जिले',
-                'overview': 'अवलोकन',
-                'ideas': 'विचार विश्लेषण',
-                'enrolment': 'नामांकन',
-                'demographic': 'जनसांख्यिकीय',
-                'biometric': 'बायोमेट्रिक',
-                'full_report': 'पूर्ण रिपोर्ट',
-                'total_enrolment': 'कुल नामांकन',
-                'demo_updates': 'जनसांख्यिकीय अद्यतन',
-                'bio_updates': 'बायोमेट्रिक अद्यतन',
-                'insight': 'अन्तर्दृष्टि',
-                'solution': 'सरकारी समाधान',
-                'chart_activity': 'गतिविधि',
-                'chart_recommended': 'अनुशंसित',
-                'chart_18_vol': '18+ मात्रा',
-                'chart_0_5_gap': '0-5 अतंर',
-                'chart_anomalies': 'विसंगतियां',
-                'chart_inclusion': 'समावेश',
-                'chart_language': 'भाषा',
-                'chart_faulty': 'दोषपूर्ण',
-                'chart_migration': 'प्रवास',
-                'chart_footfall': 'फुटफॉल'
-            },
-            'gu': {
-                'title': 'એનાલિટીક્સ ડેશબોર્ડ',
-                'analyzing': 'યુઆઈડીએઆઈ ડેટા વિશ્લેષણ...',
-                'synthesizing': '2026 માટે આંતરદૃષ્ટિ',
-                'footer_title': 'યુઆઈડીએઆઈ ડેટા હેકાથોન 2026',
-                'footer_text': 'વધુ સારા શાસન માટે પગલાં લેવા યોગ્ય આંતરદૃષ્ટિ',
-                'select_state': 'રાજ્ય પસંદ કરો',
-                'all_districts': 'બધા જિલ્લાઓ',
-                'overview': 'ઝાંખી',
-                'ideas': 'વિચારો વિશ્લેષણ',
-                'enrolment': 'નોંધણી',
-                'demographic': 'વસ્તી વિષયક',
-                'biometric': 'બાયોમેટ્રિક',
-                'full_report': 'સંપૂર્ણ અહેવાલ',
-                'total_enrolment': 'કુલ નોંધણી',
-                'demo_updates': 'વસ્તી વિષયક સુધારાઓ',
-                'bio_updates': 'બાયોમેટ્રિક સુધારાઓ',
-                'insight': 'આંતરદૃષ્ટિ',
-                'solution': 'સરકારી ઉકેલ',
-                'chart_activity': 'પ્રવૃત્તિ',
-                'chart_recommended': 'ભલામણ કરેલ',
-                'chart_18_vol': '18+ જથ્થો',
-                'chart_0_5_gap': '0-5 ગેપ',
-                'chart_anomalies': 'વિસંગતતાઓ',
-                'chart_inclusion': 'સમાવેશ',
-                'chart_language': 'ભાષા',
-                'chart_faulty': 'ખામીયુક્ત',
-                'chart_migration': 'સ્થળાંતર',
-                'chart_footfall': 'ફૂટફોલ'
+        <!-- Language Modal -->
+        <div class="modal fade" id="languageModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header-custom text-center">
+                        <h5 class="modal-title w-100">Select Language</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="lang-grid">
+                            <div class="lang-btn active" onclick="changeLanguage('en')">
+                                <span>English</span>
+                            </div>
+                            <div class="lang-btn" onclick="changeLanguage('hi')">
+                                <span>Hindi</span>
+                                <span>हिन्दी</span>
+                            </div>
+                            <div class="lang-btn" onclick="changeLanguage('gu')">
+                                <span>Gujarati</span>
+                                <span>ગુજરાતી</span>
+                            </div>
+                            <div class="lang-btn" onclick="changeLanguage('pa')">
+                                <span>Punjabi</span>
+                                <span>ਪੰਜਾਬી</span>
+                            </div>
+                            <div class="lang-btn" onclick="changeLanguage('mr')">
+                                <span>Marathi</span>
+                                <span>मराठी</span>
+                            </div>
+                            <div class="lang-btn" onclick="changeLanguage('ta')">
+                                <span>Tamil</span>
+                                <span>தமிழ்</span>
+                            </div>
+                            <div class="lang-btn" onclick="changeLanguage('te')">
+                                <span>Telugu</span>
+                                <span>తెలుగు</span>
+                            </div>
+                            <div class="lang-btn" onclick="changeLanguage('kn')">
+                                <span>Kannada</span>
+                                <span>ಕನ್ನಡ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // --- Accessibility & Localization Logic ---
+            const translations = {
+                'en': {
+                    'title': 'Analytics Dashboard',
+                    'analyzing': 'Analyzing UIDAI Data...',
+                    'synthesizing': 'Synthesizing insights for 2026',
+                    'footer_title': 'UIDAI Data Hackathon 2026',
+                    'footer_text': 'Actionable Insights for Better Governance',
+                    'select_state': 'Select State',
+                    'all_districts': 'All Districts',
+                    'overview': 'Overview',
+                    'ideas': 'Ideas Analysis',
+                    'enrolment': 'Enrolment',
+                    'demographic': 'Demographic',
+                    'biometric': 'Biometric',
+                    'full_report': 'Full Report',
+                    'total_enrolment': 'Total Enrolment',
+                    'demo_updates': 'Demographic Updates',
+                    'bio_updates': 'Biometric Updates',
+                    'insight': 'Insight',
+                    'solution': 'GOVT SOLUTION',
+                    'chart_activity': 'Activity',
+                    'chart_recommended': 'Recommended',
+                    'chart_18_vol': '18+ Volume',
+                    'chart_0_5_gap': '0-5 Gap',
+                    'chart_anomalies': 'Anomalies',
+                    'chart_inclusion': 'Inclusion',
+                    'chart_language': 'Language',
+                    'chart_faulty': 'Faulty',
+                    'chart_migration': 'Migration',
+                    'why_high': 'Why High?',
+                    'why_low': 'Why Low?',
+                    'gov_solution': 'GOV SOLUTION',
+                    'near_me': 'Find Near Me',
+                    'center_locator': 'Aadhaar Center Locator',
+                    'nearest_centers': 'Top 5 Nearest Centers',
+                    'all_india': 'All India',
+                    'search_centers': 'Search Centers',
+                    'quick_links': 'Quick Links',
+                    'contact_support': 'Contact Hackathon Support'
+                },
+                'hi': {
+                    'title': 'एनालिटिक्स डैशबोर्ड',
+                    'analyzing': 'यूआईडीएआई डेटा का विश्लेषण...',
+                    'synthesizing': '2026 के लिए अंतर्दृष्टि का संश्लेषण',
+                    'footer_title': 'यूआईडीएआई डेटा हैकथॉन 2026',
+                    'footer_text': 'बेहतर शासन के लिए कार्रवाई योग्य अंतर्दृष्टि',
+                    'select_state': 'राज्य चुनें',
+                    'all_districts': 'सभी जिले',
+                    'overview': 'अवलोकन',
+                    'ideas': 'विचार विश्लेषण',
+                    'enrolment': 'नामांकन',
+                    'demographic': 'जनसांख्यिकीय',
+                    'biometric': 'बायोमेट्रिक',
+                    'full_report': 'पूर्ण रिपोर्ट',
+                    'total_enrolment': 'कुल नामांकन',
+                    'demo_updates': 'जनसांख्यिकीय अद्यतन',
+                    'bio_updates': 'बायोमेट्रिक अद्यतन',
+                    'insight': 'अन्तर्दृष्टि',
+                    'solution': 'सरकारी समाधान',
+                    'chart_activity': 'गतिविधि',
+                    'chart_recommended': 'अनुशंसित',
+                    'chart_18_vol': '18+ मात्रा',
+                    'chart_0_5_gap': '0-5 अतंर',
+                    'chart_anomalies': 'विसंगतियां',
+                    'chart_inclusion': 'समावेश',
+                    'chart_language': 'भाषा',
+                    'chart_faulty': 'दोषपूर्ण',
+                    'chart_migration': 'प्रवास',
+                    'chart_footfall': 'फुटफॉल',
+                    'why_high': 'ज्यादा क्यों?',
+                    'why_low': 'कम क्यों?',
+                    'gov_solution': 'सरकारी समाधान',
+                    'near_me': 'मेरे पास खोजें',
+                    'center_locator': 'आधार केंद्र लोकेटर',
+                    'nearest_centers': 'शीर्ष 5 निकटतम केंद्र',
+                    'all_india': 'अखिल भारतीय',
+                    'search_centers': 'केंद्र खोजें',
+                    'quick_links': 'त्वरित लिंक',
+                    'contact_support': 'हैकथॉन सहायता से संपर्क करें'
+                },
+                'gu': {
+                    'title': 'એનાલિટીક્સ ડેશબોર્ડ',
+                    'analyzing': 'યુઆઈડીએઆઈ ડેટા વિશ્લેષણ...',
+                    'synthesizing': '2026 માટે આંતરદૃષ્ટિ',
+                    'footer_title': 'યુઆઈડીએઆઈ ડેટા હેકાથોન 2026',
+                    'footer_text': 'વધુ સારા શાસન માટે પગલાં લેવા યોગ્ય આંતરદૃષ્ટિ',
+                    'select_state': 'રાજ્ય પસંદ કરો',
+                    'all_districts': 'બધા જિલ્લાઓ',
+                    'overview': 'ઝાંખી',
+                    'ideas': 'વિચારો વિશ્લેષણ',
+                    'enrolment': 'નોંધણી',
+                    'demographic': 'વસ્તી વિષયક',
+                    'biometric': 'બાયોમેટ્રિક',
+                    'full_report': 'સંપૂર્ણ અહેવાલ',
+                    'total_enrolment': 'કુલ નોંધણી',
+                    'demo_updates': 'વસ્તી વિષયક સુધારાઓ',
+                    'bio_updates': 'બાયોમેટ્રિક સુધારાઓ',
+                    'insight': 'આંતરદૃષ્ટિ',
+                    'solution': 'સરકારી ઉકેલ',
+                    'chart_activity': 'પ્રવૃત્તિ',
+                    'chart_recommended': 'ભલામણ કરેલ',
+                    'chart_18_vol': '18+ જથ્થો',
+                    'chart_0_5_gap': '0-5 ગેપ',
+                    'chart_anomalies': 'વિસંગતતાઓ',
+                    'chart_inclusion': 'સમાવેશ',
+                    'chart_language': 'ભાષા',
+                    'chart_faulty': 'ખામીયુક્ત',
+                    'chart_migration': 'સ્થળાંતર',
+                    'chart_footfall': 'ફૂટફોલ',
+                    'why_high': 'શા માટે વધારે?',
+                    'why_low': 'શા માટે ઓછું?',
+                    'gov_solution': 'સરકારી ઉકેલ',
+                    'near_me': 'મારી નજીક શોધો',
+                    'center_locator': 'આધાર કેન્દ્ર શોધક',
+                    'nearest_centers': 'નજીકના ૫ આધાર કેન્દ્રો',
+                    'all_india': 'સમગ્ર ભારત',
+                    'search_centers': 'કેન્દ્રો શોધો',
+                    'quick_links': 'ઝડપી લિંક્સ',
+                    'contact_support': 'હેકાથોન સપોર્ટનો સંપર્ક કરો'
+                }
+            };
+
+            let currentLang = 'en';
+
+            // --- Scroll UI Logic ---
+            window.onscroll = function () {
+                // Progress Bar
+                var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                var scrolled = (winScroll / height) * 100;
+                const myBar = document.getElementById("myBar");
+                if (myBar) myBar.style.width = scrolled + "%";
+
+                // Scroll Top Button
+                var scrollTopBtn = document.getElementById("scrollTop");
+                if (scrollTopBtn) {
+                    if (winScroll > 300) {
+                        scrollTopBtn.style.display = "flex";
+                    } else {
+                        scrollTopBtn.style.display = "none";
+                    }
+                }
+            };
+
+            const scrollTopEle = document.getElementById("scrollTop");
+            if (scrollTopEle) {
+                scrollTopEle.onclick = function () {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
             }
-        };
 
-        let currentLang = 'en';
+            function changeFontSize(size) {
+                const body = document.body;
+                body.classList.remove('fs-small', 'fs-large');
+                if (size === 'small') body.classList.add('fs-small');
+                if (size === 'large') body.classList.add('fs-large');
 
-        // --- Scroll UI Logic ---
-        window.onscroll = function () {
-            // Progress Bar
-            var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            var scrolled = (winScroll / height) * 100;
-            const myBar = document.getElementById("myBar");
-            if (myBar) myBar.style.width = scrolled + "%";
-
-            // Scroll Top Button
-            var scrollTopBtn = document.getElementById("scrollTop");
-            if (scrollTopBtn) {
-                if (winScroll > 300) {
-                    scrollTopBtn.style.display = "flex";
-                } else {
-                    scrollTopBtn.style.display = "none";
+                // Mark active in modal
+                const btns = document.querySelectorAll('#accessibilityModal .acc-grid:nth-of-type(2) .acc-btn');
+                btns.forEach(b => b.classList.remove('active'));
+                // Use event.currentTarget if called from onclick, or manual logic
+                if (window.event && window.event.currentTarget) {
+                    window.event.currentTarget.classList.add('active');
                 }
             }
-        };
 
-        const scrollTopEle = document.getElementById("scrollTop");
-        if (scrollTopEle) {
-            scrollTopEle.onclick = function () {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-        }
+            // --- Accessibility Logic ---
+            function toggleColor(mode) {
+                const body = document.body;
+                const btns = document.querySelectorAll('#accessibilityModal .acc-grid:first-of-type .acc-btn');
 
-        function changeFontSize(size) {
-            const body = document.body;
-            body.classList.remove('fs-small', 'fs-large');
-            if (size === 'small') body.classList.add('fs-small');
-            if (size === 'large') body.classList.add('fs-large');
+                body.classList.remove('dark-contrast');
+                btns.forEach(b => b.classList.remove('active'));
 
-            // Mark active in modal
-            const btns = document.querySelectorAll('#accessibilityModal .acc-grid:nth-of-type(2) .acc-btn');
-            btns.forEach(b => b.classList.remove('active'));
-            // Use event.currentTarget if called from onclick, or manual logic
-            if (window.event && window.event.currentTarget) {
-                window.event.currentTarget.classList.add('active');
+                if (mode === 'dark') {
+                    body.classList.add('dark-contrast');
+                }
+                if (window.event && window.event.currentTarget) {
+                    window.event.currentTarget.classList.add('active');
+                }
             }
-        }
 
-        // --- Accessibility Logic ---
-        function toggleColor(mode) {
-            const body = document.body;
-            const btns = document.querySelectorAll('#accessibilityModal .acc-grid:first-of-type .acc-btn');
-
-            body.classList.remove('dark-contrast');
-            btns.forEach(b => b.classList.remove('active'));
-
-            if (mode === 'dark') {
-                body.classList.add('dark-contrast');
+            function toggleMisc(feature) {
+                document.body.classList.toggle(feature);
+                if (window.event && window.event.currentTarget) {
+                    window.event.currentTarget.classList.toggle('active');
+                }
             }
-            if (window.event && window.event.currentTarget) {
-                window.event.currentTarget.classList.add('active');
+
+            // Helper to get translation
+            function getTrans(key) {
+                return (translations[currentLang] && translations[currentLang][key]) ? translations[currentLang][key] : (translations['en'][key] || key);
             }
-        }
 
-        function toggleMisc(feature) {
-            document.body.classList.toggle(feature);
-            if (window.event && window.event.currentTarget) {
-                window.event.currentTarget.classList.toggle('active');
-            }
-        }
+            function changeLanguage(lang) {
+                currentLang = lang;
+                const t = translations[lang] || translations['en'];
 
-        // Helper to get translation
-        function getTrans(key) {
-            return (translations[currentLang] && translations[currentLang][key]) ? translations[currentLang][key] : (translations['en'][key] || key);
-        }
+                // Update active state in modal
+                document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+                const activeBtn = Array.from(document.querySelectorAll('.lang-btn')).find(b => b.textContent.includes(lang.toUpperCase()) || b.onclick.toString().includes(`'${lang}'` || b.getAttribute('onclick').includes(`'${lang}'`)));
+                if (activeBtn) activeBtn.classList.add('active');
 
-        function changeLanguage(lang) {
-            currentLang = lang;
-            const t = translations[lang] || translations['en'];
+                // Update Dashboard Title
+                const titleEl = document.querySelector('.navbar h5');
+                if (titleEl) titleEl.textContent = t['title'];
 
-            // Update active state in modal
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = Array.from(document.querySelectorAll('.lang-btn')).find(b => b.textContent.includes(lang.toUpperCase()) || b.onclick.toString().includes(`'${lang}'` || b.getAttribute('onclick').includes(`'${lang}'`)));
-            if (activeBtn) activeBtn.classList.add('active');
+                // Update Loader Text
+                const loaderTitle = document.querySelector('#loader-wrapper h4');
+                if (loaderTitle) loaderTitle.textContent = t['analyzing'];
 
-            // Update Dashboard Title
-            const titleEl = document.querySelector('.navbar h5');
-            if (titleEl) titleEl.textContent = t['title'];
+                const loaderSub = document.querySelector('#loader-wrapper span');
+                if (loaderSub) loaderSub.textContent = t['synthesizing'];
 
-            // Update Loader Text
-            const loaderTitle = document.querySelector('#loader-wrapper h4');
-            if (loaderTitle) loaderTitle.textContent = t['analyzing'];
-
-            const loaderSub = document.querySelector('#loader-wrapper span');
-            if (loaderSub) loaderSub.textContent = t['synthesizing'];
-
-            // Update Sidebar Links
-            const linksMap = {
-                'Overview': 'overview',
-                'Ideas Analysis': 'ideas',
-                'Enrolment': 'enrolment',
-                'Demographic': 'demographic',
-                'Biometric': 'biometric',
-                'Full Report': 'full_report'
-            };
-
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                const textNode = Array.from(link.childNodes).find(n => n.nodeType === 3 && n.textContent.trim() !== '');
-                if (textNode) {
-                    let key = link.getAttribute('data-lang-key');
-                    if (!key) {
-                        const content = textNode.textContent.trim();
-                        for (let k in linksMap) {
-                            if (content === k) key = linksMap[k];
+                // Update Elements with data-lang-key
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.getAttribute('data-lang-key');
+                    if (t[key]) {
+                        // If it has a span child (for sidebar/footer links with icons), update that
+                        const span = el.querySelector('span');
+                        if (span) {
+                            span.textContent = t[key];
+                        } else {
+                            // Otherwise update text node if it's not mostly blank, or just innerText if empty
+                            const textNode = Array.from(el.childNodes).find(n => n.nodeType === 3 && n.textContent.trim() !== '');
+                            if (textNode) {
+                                textNode.textContent = ' ' + t[key];
+                            } else {
+                                el.textContent = t[key];
+                            }
                         }
-                        if (key) link.setAttribute('data-lang-key', key);
                     }
-                    if (key && t[key]) {
-                        textNode.textContent = ' ' + t[key];
+                });
+
+                // Update Filters
+                const stateFilter = document.getElementById('stateFilter');
+                if (stateFilter && stateFilter.options.length > 0) {
+                    if (stateFilter.options[0].value === 'All') stateFilter.options[0].text = t['select_state'];
+                }
+
+                const distFilter = document.getElementById('districtFilter');
+                if (distFilter && distFilter.options.length > 0) {
+                    if (distFilter.options[0].value === 'All') distFilter.options[0].text = t['all_districts'];
+                }
+
+                // Update Footer
+                const footerTitle = document.querySelector('footer p.fw-bold');
+                if (footerTitle) footerTitle.textContent = t['footer_title'];
+
+                const footerText = document.querySelector('footer p.small');
+                if (footerText) footerText.textContent = t['footer_text'];
+
+                // Dispatch event for other components
+                window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: lang } }));
+
+                // Close modal (Bootstrap 5 way)
+                const modalEl = document.getElementById('languageModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+            }
+
+            // Geo Translations (States + Districts)
+            const stateTranslations = {
+                'Andhra Pradesh': { 'hi': 'आंध्र प्रदेश', 'gu': 'આંધ્ર પ્રદેશ' },
+                'Arunachal Pradesh': { 'hi': 'अरुणाचल प्रदेश', 'gu': 'અરુણાચલ પ્રદેશ' },
+                'Assam': { 'hi': 'असम', 'gu': 'આસામ' },
+                'Bihar': { 'hi': 'बिहार', 'gu': 'બિહાર' },
+                'Chhattisgarh': { 'hi': 'छत्तीसगढ़', 'gu': 'છત્તીસગઢ' },
+                'Goa': { 'hi': 'गोवा', 'gu': 'ગોવા' },
+                'Gujarat': { 'hi': 'गुजरात', 'gu': 'ગુજરાત' },
+                'Haryana': { 'hi': 'हरियाणा', 'gu': 'હરિયાણા' },
+                'Himachal Pradesh': { 'hi': 'हिमाचल प्रदेश', 'gu': 'હિમાચલ પ્રદેશ' },
+                'Jharkhand': { 'hi': 'झारखंड', 'gu': 'ઝારખંડ' },
+                'Karnataka': { 'hi': 'कर्नाटक', 'gu': 'કર્ણાટક' },
+                'Kerala': { 'hi': 'केरल', 'gu': 'કેરળ' },
+                'Madhya Pradesh': { 'hi': 'मध्य प्रदेश', 'gu': 'મધ્ય પ્રદેશ' },
+                'Maharashtra': { 'hi': 'महाराष्ट्र', 'gu': 'મહારાષ્ટ્ર' },
+                'Manipur': { 'hi': 'मणिपुर', 'gu': 'મણિપુર' },
+                'Meghalaya': { 'hi': 'मेघालय', 'gu': 'મેઘાલય' },
+                'Mizoram': { 'hi': 'मिजोरम', 'gu': 'મિઝોરમ' },
+                'Nagaland': { 'hi': 'नागालैंड', 'gu': 'નાગાલેન્ડ' },
+                'Odisha': { 'hi': 'ओडिशा', 'gu': 'ઓડિશા' },
+                'Punjab': { 'hi': 'पंजाब', 'gu': 'પંજાબ' },
+                'Rajasthan': { 'hi': 'राजस्थान', 'gu': 'રાજસ્થાન' },
+                'Sikkim': { 'hi': 'सिक्किम', 'gu': 'સિક્कિમ' },
+                'Tamil Nadu': { 'hi': 'तमिलनाडु', 'gu': 'તમિલનાડુ' },
+                'Telangana': { 'hi': 'तेलंगाना', 'gu': 'તેલંગાણા' },
+                'Tripura': { 'hi': 'त्रिपुरा', 'gu': 'ત્રિપુરા' },
+                'Uttar Pradesh': { 'hi': 'उत्तर प्रदेश', 'gu': 'ઉત્તર પ્રદેશ' },
+                'Uttarakhand': { 'hi': 'उत्तराखंड', 'gu': 'ઉત્તરાખંડ' },
+                'West Bengal': { 'hi': 'पश्चिम बंगाल', 'gu': 'પશ્ચિમ બંગાળ' },
+                // Union Territories
+                'Andaman and Nicobar Islands': { 'hi': 'अंडमान और निकोबार द्वीप समूह', 'gu': 'આંદામાન અને નિકોબાર ટાપુઓ' },
+                'Chandigarh': { 'hi': 'चंडीगढ़', 'gu': 'ચંદીગઢ' },
+                'Dadra and Nagar Haveli': { 'hi': 'दादरा और नगर हवेली', 'gu': 'દાદરા અને નગર હવેલી' },
+                'Daman and Diu': { 'hi': 'दमन और दीव', 'gu': 'દમણ અને દીવ' },
+                'Delhi': { 'hi': 'दिल्ली', 'gu': 'દિલ્હી' },
+                'Jammu and Kashmir': { 'hi': 'जम्मू और कश्मीर', 'gu': 'જમ્મુ અને કાશ્મીર' },
+                'Ladakh': { 'hi': 'लद्दाख', 'gu': 'લદ્દાખ' },
+                'Lakshadweep': { 'hi': 'लक्षद्वीप', 'gu': 'લક્ષદ્વીપ' },
+                'Puducherry': { 'hi': 'पुडुचेरी', 'gu': 'પુડુચેરી' },
+
+                // Districts (Gujarat Focus)
+                'Ahmadabad': { 'hi': 'अहमदाबाद', 'gu': 'અમદાવાદ' },
+                'Ahmedabad': { 'hi': 'अहमदाबाद', 'gu': 'અમદાવાદ' }, // Handle both spellings
+                'Surat': { 'hi': 'सूरत', 'gu': 'સુરત' },
+                'Vadodara': { 'hi': 'वडोदरा', 'gu': 'વડોદરા' },
+                'Rajkot': { 'hi': 'राजकोट', 'gu': 'રાજકોટ' },
+                'Bhavnagar': { 'hi': 'भावनगर', 'gu': 'ભાવનગર' },
+                'Jamnagar': { 'hi': 'जामनगर', 'gu': 'જામનગર' },
+                'Junagadh': { 'hi': 'जूनागढ़', 'gu': 'જુનાગઢ' },
+                'Gandhinagar': { 'hi': 'गांधीनगर', 'gu': 'ગાંધીનગર' },
+                'Kheda': { 'hi': 'खेड़ा', 'gu': 'ખેડા' },
+                'Banaskantha': { 'hi': 'बनासकांठा', 'gu': 'બનાસકાંઠા' },
+                'Sabarkantha': { 'hi': 'साबरकांठा', 'gu': 'સાબરકાંઠા' },
+                'Mehsana': { 'hi': 'मेहसाणा', 'gu': 'મહેસાણા' },
+                'Kutch': { 'hi': 'कच्छ', 'gu': 'કચ્છ' },
+                'Anand': { 'hi': 'आणंद', 'gu': 'આણંદ' },
+                'Bharuch': { 'hi': 'भरूच', 'gu': 'ભરૂચ' },
+                'Navsari': { 'hi': 'नवसारी', 'gu': 'નવસારી' },
+                'Valsad': { 'hi': 'वलसाड', 'gu': 'વલસાડ' },
+                'Porbandar': { 'hi': 'पोरबंदर', 'gu': 'પોરબંદર' },
+                'Surendranagar': { 'hi': 'सुरेंद्रनगर', 'gu': 'સુરેન્દ્રનગર' },
+                'Amreli': { 'hi': 'अमरेली', 'gu': 'અમરેલી' },
+                'Panchmahal': { 'hi': 'पंचमहल', 'gu': 'પંચમહાલ' },
+                'Dahod': { 'hi': 'दाहोद', 'gu': 'દાહોદ' },
+                'Narmada': { 'hi': 'नर्मदा', 'gu': 'નર્મદા' },
+                'Tapi': { 'hi': 'तापी', 'gu': 'તાપી' },
+                'Morbi': { 'hi': 'मोरबी', 'gu': 'મોરબી' },
+                'Aravalli': { 'hi': 'अरावली', 'gu': 'અરવલ્લી' },
+                'Mahisagar': { 'hi': 'महिसागर', 'gu': 'મહીસાગર' },
+                'Chhota Udaipur': { 'hi': 'छोटा उदयपुर', 'gu': 'છોટા ઉદેપુર' },
+                'Devbhoomi Dwarka': { 'hi': 'देवभूमि द्वारका', 'gu': 'દેવભૂમિ દ્વારકા' },
+                'Gir Somnath': { 'hi': 'गिर सोमनाथ', 'gu': 'ગીર સોમનાથ' },
+                'Botad': { 'hi': 'बोटाद', 'gu': 'બોટાદ' },
+                'Patan': { 'hi': 'पाटन', 'gu': 'પાટણ' },
+                'Dang': { 'hi': 'डांग', 'gu': 'ડાંગ' }
+            };
+
+            function getStateTrans(key) {
+                if ((!key) || (currentLang === 'en')) return key;
+                const t = stateTranslations[key];
+                return (t && t[currentLang]) ? t[currentLang] : key;
+            }
+
+            // Number Formatting (Locale Aware)
+            function formatNumber(num) {
+                let locale = 'en-IN'; // Default to Indian English
+                if (currentLang === 'hi') locale = 'hi-IN';
+                if (currentLang === 'gu') locale = 'gu-IN';
+
+                return new Intl.NumberFormat(locale).format(num);
+            }
+
+            // Auto-detect Location and Language
+            async function detectLocation() {
+                try {
+                    // Using ipapi.co for free geolocation (client-side)
+                    const response = await fetch('https://ipapi.co/json/');
+                    const data = await response.json();
+
+                    if (data.region === 'Gujarat' || data.region_code === 'GJ') {
+                        changeLanguage('gu');
                     }
+                } catch (error) {
+                    console.log('Geo-location failed, defaulting to English');
+                }
+            }
+
+            // Initial checks
+            window.addEventListener('DOMContentLoaded', () => {
+                detectLocation();
+            });
+        </script>
+        <script>
+            const menuToggle = document.getElementById("menu-toggle");
+            const wrapper = document.getElementById("wrapper");
+            const overlay = document.getElementById("sidebar-overlay");
+
+            menuToggle.addEventListener("click", e => {
+                e.preventDefault();
+                wrapper.classList.toggle("toggled");
+            });
+
+            overlay.addEventListener("click", () => {
+                wrapper.classList.remove("toggled");
+            });
+
+            // Close sidebar on link click (mobile)
+            const links = document.querySelectorAll('.sidebar-link');
+            links.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        wrapper.classList.remove("toggled");
+                    }
+                });
+            });
+
+            // Set active link based on URL
+            const currentPath = window.location.pathname;
+            links.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
                 }
             });
 
-            // Update Filters
-            const stateFilter = document.getElementById('stateFilter');
-            if (stateFilter && stateFilter.options.length > 0) {
-                if (stateFilter.options[0].value === 'All') stateFilter.options[0].text = t['select_state'];
+            // Loader Functions
+            const loader = document.getElementById('loader-wrapper');
+
+            function showLoader() {
+                loader.classList.remove('fade-out');
             }
 
-            const distFilter = document.getElementById('districtFilter');
-            if (distFilter && distFilter.options.length > 0) {
-                if (distFilter.options[0].value === 'All') distFilter.options[0].text = t['all_districts'];
+            function hideLoader() {
+                setTimeout(() => {
+                    loader.classList.add('fade-out');
+                }, 1000);
             }
 
-            // Update Footer
-            const footerTitle = document.querySelector('footer p.fw-bold');
-            if (footerTitle) footerTitle.textContent = t['footer_title'];
-
-            const footerText = document.querySelector('footer p.small');
-            if (footerText) footerText.textContent = t['footer_text'];
-
-            // Dispatch event for other components
-            window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: lang } }));
-
-            // Close modal (Bootstrap 5 way)
-            const modalEl = document.getElementById('languageModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
-        }
-
-        // Geo Translations (States + Districts)
-        const stateTranslations = {
-            'Andhra Pradesh': { 'hi': 'आंध्र प्रदेश', 'gu': 'આંધ્ર પ્રદેશ' },
-            'Arunachal Pradesh': { 'hi': 'अरुणाचल प्रदेश', 'gu': 'અરુણાચલ પ્રદેશ' },
-            'Assam': { 'hi': 'असम', 'gu': 'આસામ' },
-            'Bihar': { 'hi': 'बिहार', 'gu': 'બિહાર' },
-            'Chhattisgarh': { 'hi': 'छत्तीसगढ़', 'gu': 'છત્તીસગઢ' },
-            'Goa': { 'hi': 'गोवा', 'gu': 'ગોવા' },
-            'Gujarat': { 'hi': 'गुजरात', 'gu': 'ગુજરાત' },
-            'Haryana': { 'hi': 'हरियाणा', 'gu': 'હરિયાણા' },
-            'Himachal Pradesh': { 'hi': 'हिमाचल प्रदेश', 'gu': 'હિમાચલ પ્રદેશ' },
-            'Jharkhand': { 'hi': 'झारखंड', 'gu': 'ઝારખંડ' },
-            'Karnataka': { 'hi': 'कर्नाटक', 'gu': 'કર્ણાટક' },
-            'Kerala': { 'hi': 'केरल', 'gu': 'કેરળ' },
-            'Madhya Pradesh': { 'hi': 'मध्य प्रदेश', 'gu': 'મધ્ય પ્રદેશ' },
-            'Maharashtra': { 'hi': 'महाराष्ट्र', 'gu': 'મહારાષ્ટ્ર' },
-            'Manipur': { 'hi': 'मणिपुर', 'gu': 'મણિપુર' },
-            'Meghalaya': { 'hi': 'मेघालय', 'gu': 'મેઘાલય' },
-            'Mizoram': { 'hi': 'मिजोरम', 'gu': 'મિઝોરમ' },
-            'Nagaland': { 'hi': 'नागालैंड', 'gu': 'નાગાલેન્ડ' },
-            'Odisha': { 'hi': 'ओडिशा', 'gu': 'ઓડિશા' },
-            'Punjab': { 'hi': 'पंजाब', 'gu': 'પંજાબ' },
-            'Rajasthan': { 'hi': 'राजस्थान', 'gu': 'રાજસ્થાન' },
-            'Sikkim': { 'hi': 'सिक्किम', 'gu': 'સિક્कિમ' },
-            'Tamil Nadu': { 'hi': 'तमिलनाडु', 'gu': 'તમિલનાડુ' },
-            'Telangana': { 'hi': 'तेलंगाना', 'gu': 'તેલંગાણા' },
-            'Tripura': { 'hi': 'त्रिपुरा', 'gu': 'ત્રિપુરા' },
-            'Uttar Pradesh': { 'hi': 'उत्तर प्रदेश', 'gu': 'ઉત્તર પ્રદેશ' },
-            'Uttarakhand': { 'hi': 'उत्तराखंड', 'gu': 'ઉત્તરાખંડ' },
-            'West Bengal': { 'hi': 'पश्चिम बंगाल', 'gu': 'પશ્ચિમ બંગાળ' },
-            // Union Territories
-            'Andaman and Nicobar Islands': { 'hi': 'अंडमान और निकोबार द्वीप समूह', 'gu': 'આંદામાન અને નિકોબાર ટાપુઓ' },
-            'Chandigarh': { 'hi': 'चंडीगढ़', 'gu': 'ચંદીગઢ' },
-            'Dadra and Nagar Haveli': { 'hi': 'दादरा और नगर हवेली', 'gu': 'દાદરા અને નગર હવેલી' },
-            'Daman and Diu': { 'hi': 'दमन और दीव', 'gu': 'દમણ અને દીવ' },
-            'Delhi': { 'hi': 'दिल्ली', 'gu': 'દિલ્હી' },
-            'Jammu and Kashmir': { 'hi': 'जम्मू और कश्मीर', 'gu': 'જમ્મુ અને કાશ્મીર' },
-            'Ladakh': { 'hi': 'लद्दाख', 'gu': 'લદ્દાખ' },
-            'Lakshadweep': { 'hi': 'लक्षद्वीप', 'gu': 'લક્ષદ્વીપ' },
-            'Puducherry': { 'hi': 'पुडुचेरी', 'gu': 'પુડુચેરી' },
-
-            // Districts (Gujarat Focus)
-            'Ahmadabad': { 'hi': 'अहमदाबाद', 'gu': 'અમદાવાદ' },
-            'Ahmedabad': { 'hi': 'अहमदाबाद', 'gu': 'અમદાવાદ' }, // Handle both spellings
-            'Surat': { 'hi': 'सूरत', 'gu': 'સુરત' },
-            'Vadodara': { 'hi': 'वडोदरा', 'gu': 'વડોદરા' },
-            'Rajkot': { 'hi': 'राजकोट', 'gu': 'રાજકોટ' },
-            'Bhavnagar': { 'hi': 'भावनगर', 'gu': 'ભાવનગર' },
-            'Jamnagar': { 'hi': 'जामनगर', 'gu': 'જામનગર' },
-            'Junagadh': { 'hi': 'जूनागढ़', 'gu': 'જુનાગઢ' },
-            'Gandhinagar': { 'hi': 'गांधीनगर', 'gu': 'ગાંધીનગર' },
-            'Kheda': { 'hi': 'खेड़ा', 'gu': 'ખેડા' },
-            'Banaskantha': { 'hi': 'बनासकांठा', 'gu': 'બનાસકાંઠા' },
-            'Sabarkantha': { 'hi': 'साबरकांठा', 'gu': 'સાબરકાંઠા' },
-            'Mehsana': { 'hi': 'मेहसाणा', 'gu': 'મહેસાણા' },
-            'Kutch': { 'hi': 'कच्छ', 'gu': 'કચ્છ' },
-            'Anand': { 'hi': 'आणंद', 'gu': 'આણંદ' },
-            'Bharuch': { 'hi': 'भरूच', 'gu': 'ભરૂચ' },
-            'Navsari': { 'hi': 'नवसारी', 'gu': 'નવસારી' },
-            'Valsad': { 'hi': 'वलसाड', 'gu': 'વલસાડ' },
-            'Porbandar': { 'hi': 'पोरबंदर', 'gu': 'પોરબંદર' },
-            'Surendranagar': { 'hi': 'सुरेंद्रनगर', 'gu': 'સુરેન્દ્રનગર' },
-            'Amreli': { 'hi': 'अमरेली', 'gu': 'અમરેલી' },
-            'Panchmahal': { 'hi': 'पंचमहल', 'gu': 'પંચમહાલ' },
-            'Dahod': { 'hi': 'दाहोद', 'gu': 'દાહોદ' },
-            'Narmada': { 'hi': 'नर्मदा', 'gu': 'નર્મદા' },
-            'Tapi': { 'hi': 'तापी', 'gu': 'તાપી' },
-            'Morbi': { 'hi': 'मोरबी', 'gu': 'મોરબી' },
-            'Aravalli': { 'hi': 'अरावली', 'gu': 'અરવલ્લી' },
-            'Mahisagar': { 'hi': 'महिसागर', 'gu': 'મહીસાગર' },
-            'Chhota Udaipur': { 'hi': 'छोटा उदयपुर', 'gu': 'છોટા ઉદેપુર' },
-            'Devbhoomi Dwarka': { 'hi': 'देवभूमि द्वारका', 'gu': 'દેવભૂમિ દ્વારકા' },
-            'Gir Somnath': { 'hi': 'गिर सोमनाथ', 'gu': 'ગીર સોમનાથ' },
-            'Botad': { 'hi': 'बोटाद', 'gu': 'બોટાદ' },
-            'Patan': { 'hi': 'पाटन', 'gu': 'પાટણ' },
-            'Dang': { 'hi': 'डांग', 'gu': 'ડાંગ' }
-        };
-
-        function getStateTrans(key) {
-            if ((!key) || (currentLang === 'en')) return key;
-            const t = stateTranslations[key];
-            return (t && t[currentLang]) ? t[currentLang] : key;
-        }
-
-        // Number Formatting (Locale Aware)
-        function formatNumber(num) {
-            let locale = 'en-IN'; // Default to Indian English
-            if (currentLang === 'hi') locale = 'hi-IN';
-            if (currentLang === 'gu') locale = 'gu-IN';
-
-            return new Intl.NumberFormat(locale).format(num);
-        }
-
-        // Auto-detect Location and Language
-        async function detectLocation() {
-            try {
-                // Using ipapi.co for free geolocation (client-side)
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
-
-                if (data.region === 'Gujarat' || data.region_code === 'GJ') {
-                    changeLanguage('gu');
+            // Global Export Handler
+            function updateGlobalExportLink() {
+                const state = document.getElementById('stateFilter')?.value || 'All';
+                const district = document.getElementById('districtFilter')?.value || 'All';
+                const btn = document.getElementById('globalExportBtn');
+                if (btn) {
+                    btn.href = `/export/global/dataset?state=${state}&district=${district}`;
                 }
-            } catch (error) {
-                console.log('Geo-location failed, defaulting to English');
             }
-        }
 
-        // Initial checks
-        window.addEventListener('DOMContentLoaded', () => {
-            detectLocation();
-        });
-    </script>
-    <script>
-        const menuToggle = document.getElementById("menu-toggle");
-        const wrapper = document.getElementById("wrapper");
-        const overlay = document.getElementById("sidebar-overlay");
-
-        menuToggle.addEventListener("click", e => {
-            e.preventDefault();
-            wrapper.classList.toggle("toggled");
-        });
-
-        overlay.addEventListener("click", () => {
-            wrapper.classList.remove("toggled");
-        });
-
-        // Close sidebar on link click (mobile)
-        const links = document.querySelectorAll('.sidebar-link');
-        links.forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    wrapper.classList.remove("toggled");
+            document.addEventListener('change', (e) => {
+                if (e.target.id === 'stateFilter' || e.target.id === 'districtFilter') {
+                    updateGlobalExportLink();
                 }
             });
-        });
 
-        // Set active link based on URL
-        const currentPath = window.location.pathname;
-        links.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === currentPath) {
-                link.classList.add('active');
+            // Initialize export link
+            updateGlobalExportLink();
+
+            // Safety timeout to ensure loader doesn't get stuck
+            window.addEventListener('load', () => {
+                // Fallback: hide after 8 seconds if something hangs
+                setTimeout(hideLoader, 8000);
+            });
+
+            // Global Full Report Handler
+            async function exportFullReport() {
+                if (window.location.pathname !== '/') {
+                    // Not on dashboard, redirect there with auto-export flag
+                    window.location.href = '/?auto_export=true';
+                    return;
+                }
+
+                showLoader();
+                const formData = new FormData();
+
+                // Capture all 10 charts
+                for (let i = 1; i <= 10; i++) {
+                    const canvas = document.getElementById(`chart${i}`);
+                    if (canvas) {
+                        formData.append(`chart${i}`, canvas.toDataURL('image/png', 0.8));
+                    }
+                }
+
+                try {
+                    const resp = await fetch('/export/report', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const blob = await resp.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'UIDAI_Comprehensive_Analytical_Report_2026.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                } catch (err) {
+                    console.error('Export failed:', err);
+                    alert('Export failed. Please try again.');
+                } finally {
+                    hideLoader();
+                }
             }
-        });
-
-        // Loader Functions
-        const loader = document.getElementById('loader-wrapper');
-
-        function showLoader() {
-            loader.classList.remove('fade-out');
-        }
-
-        function hideLoader() {
-            setTimeout(() => {
-                loader.classList.add('fade-out');
-            }, 1000);
-        }
-
-        // Global Export Handler
-        function updateGlobalExportLink() {
-            const state = document.getElementById('stateFilter')?.value || 'All';
-            const district = document.getElementById('districtFilter')?.value || 'All';
-            const btn = document.getElementById('globalExportBtn');
-            if (btn) {
-                btn.href = `/export/global/dataset?state=${state}&district=${district}`;
-            }
-        }
-
-        document.addEventListener('change', (e) => {
-            if (e.target.id === 'stateFilter' || e.target.id === 'districtFilter') {
-                updateGlobalExportLink();
-            }
-        });
-
-        // Initialize export link
-        updateGlobalExportLink();
-
-        // Safety timeout to ensure loader doesn't get stuck
-        window.addEventListener('load', () => {
-            // Fallback: hide after 8 seconds if something hangs
-            setTimeout(hideLoader, 8000);
-        });
-    </script>
-    <!-- Chatbot UI -->
-    <div class="chatbot-container">
-        <div class="chatbot-toggle" id="chatbot-toggle">
-            <i class="fas fa-comment-dots"></i>
+        </script>
+        <!-- Chatbot UI -->
+        <div class="chatbot-container">
+            <div class="chatbot-toggle" id="chatbot-toggle">
+                <i class="fas fa-comment-dots"></i>
+            </div>
+            <div class="chat-window" id="chat-window">
+                <div class="chat-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="ai-avatar-container">
+                            <div class="ai-ring"></div>
+                            <div class="ai-ring"></div>
+                            <div class="ai-core"></div>
+                        </div>
+                        <div>
+                            <div class="fw-bold">Aadhaar Sahayak</div>
+                            <small class="d-flex align-items-center gap-1">
+                                <span class="status-dot"></span> AI • Virtual
+                            </small>
+                        </div>
+                    </div>
+                    <div class="chat-controls d-flex align-items-center gap-2">
+                        <select id="chat-lang" class="chat-lang-select" title="Select Language">
+                            <option value="en">Eng</option>
+                            <option value="hi">Hin</option>
+                            <option value="gu">Guj</option>
+                        </select>
+                        <button class="control-btn" id="chat-min" title="Minimize"><i class="fas fa-minus"></i></button>
+                        <button class="control-btn" id="chat-max" title="Maximize"><i
+                                class="fas fa-expand"></i></button>
+                        <button class="control-btn" id="chat-close" title="Close"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot">
+                        Namaste! I am Aadhaar Sahayak. How can I help you with the UIDAI data today?
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <div class="input-wrapper">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Ask about Aadhaar data...">
+                        <input type="file" id="file-input" style="display: none;" accept="image/*">
+                        <div class="input-actions">
+                            <span class="action-btn" id="attach-media" title="Upload Image"><i
+                                    class="fas fa-paperclip"></i></span>
+                            <span class="action-btn" id="send-message" title="Send Message"><i
+                                    class="fas fa-paper-plane"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="chat-window" id="chat-window">
-            <div class="chat-header">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="ai-avatar-container">
-                        <div class="ai-ring"></div>
-                        <div class="ai-ring"></div>
-                        <div class="ai-core"></div>
-                    </div>
-                    <div>
-                        <div class="fw-bold">Aadhaar Sahayak</div>
-                        <small class="d-flex align-items-center gap-1">
-                            <span class="status-dot"></span> AI • Virtual
-                        </small>
-                    </div>
-                </div>
-                <div class="chat-controls d-flex align-items-center gap-2">
-                    <select id="chat-lang" class="chat-lang-select" title="Select Language">
-                        <option value="en">Eng</option>
-                        <option value="hi">Hin</option>
-                        <option value="gu">Guj</option>
-                    </select>
-                    <button class="control-btn" id="chat-min" title="Minimize"><i class="fas fa-minus"></i></button>
-                    <button class="control-btn" id="chat-max" title="Maximize"><i class="fas fa-expand"></i></button>
-                    <button class="control-btn" id="chat-close" title="Close"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            <div class="chat-messages" id="chat-messages">
-                <div class="message bot">
-                    Namaste! I am Aadhaar Sahayak. How can I help you with the UIDAI data today?
-                </div>
-            </div>
-            <div class="chat-input-area">
-                <div class="input-wrapper">
-                    <input type="text" id="chat-input" class="chat-input" placeholder="Ask about Aadhaar data...">
-                    <input type="file" id="file-input" style="display: none;" accept="image/*">
-                    <div class="input-actions">
-                        <span class="action-btn" id="attach-media" title="Upload Image"><i
-                                class="fas fa-paperclip"></i></span>
-                        <span class="action-btn" id="send-message" title="Send Message"><i
-                                class="fas fa-paper-plane"></i></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Chatbot JS -->
-    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+        <!-- Chatbot JS -->
+        <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
 
-    {% block scripts %}{% endblock %}
+        {% block scripts %}{% endblock %}
 </body>
 
 </html>
