@@ -68,11 +68,6 @@ function validateCommonFields() {
     return true;
 }
 
-function showOTPModal() {
-    document.getElementById('otpModal').classList.add('show');
-    document.getElementById('otp1').focus();
-}
-
 async function sendMobileOTP() {
     if (!validateCommonFields()) return;
 
@@ -150,10 +145,39 @@ function verifyOTP() {
         });
 }
 
+function showOTPModal() {
+    document.getElementById('otpModal').classList.add('show');
+    document.getElementById('otp1').focus();
+}
+
+const otpInputs = document.querySelectorAll('.otp-input');
+otpInputs.forEach((input, index) => {
+    input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1 && index < 5) {
+            otpInputs[index + 1].focus();
+        }
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            otpInputs[index - 1].focus();
+        }
+    });
+
+    // Only allow numbers
+    input.addEventListener('keypress', (e) => {
+        if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+});
+
 function closeOTPModal() {
     document.getElementById('otpModal').classList.remove('show');
     // Clear OTP inputs
-    document.querySelectorAll('.otp-input').forEach(input => input.value = '');
+    for (let i = 1; i <= 6; i++) {
+        document.getElementById('otp' + i).value = '';
+    }
 }
 
 function getPayload() {
@@ -163,10 +187,6 @@ function getPayload() {
         phone: mobileEl.value.trim(),
         aadhaar: aadhaarEl.value.trim()
     };
-}
-
-function showOtpBox() {
-    document.getElementById("otpBox").classList.remove("d-none");
 }
 
 const nameEl = document.getElementById("name");
