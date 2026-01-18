@@ -6,6 +6,75 @@ from flask_cors import CORS
 import pandas as pd
 from fpdf import FPDF
 import io
+import requests, random, time, os, smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+from twilio.rest import Client
+
+# ---------------------------
+# Setup
+# ---------------------------
+load_dotenv()
+app = Flask(__name__)
+CORS(app)
+
+MOCKAPI_BASE_URL = os.getenv("MOCKAPI_BASE_URL")
+OTP_EXPIRY = 300
+
+# Twilio
+twilio_client = Client(
+    os.getenv("TWILIO_ACCOUNT_SID"),
+    os.getenv("TWILIO_AUTH_TOKEN")
+)
+TWILIO_PHONE = os.getenv("TWILIO_PHONE_NUMBER")
+
+# Email
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
+EMAIL_USER = os.getenv("EMAIL_USER")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
+otp_store = {}
+
+
+# ---------------------------
+# Helpers
+# ---------------------------
+def generate_otp():
+    return str(random.randint(100000, 999999))
+
+
+def send_sms(phone, otp):
+    twilio_client.messages.create(
+        body=f"Your OTP is {otp}. Valid for 5 minutes.",
+        from_=TWILIO_PHONE,
+        to=phone
+    )
+
+
+def send_email(email, otp):
+    msg = MIMEMultipart()
+    msg["From"] = EMAIL_USER
+    msg["To"] = email
+    msg["Subject"] = "Your OTP"
+    msg.attach(MIMEText(f"Your OTP is {otp}", "plain"))
+
+    server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+    server.starttls()
+    server.login(EMAIL_USER, EMAIL_PASSWORD)
+    server.send_message(msg)
+    server.quit()
+
+
+def save_otp(key, user):
+    otp_store[key] = {
+        "otp": generate_otp(),
+        "expires": time.time() + OTP_EXPIRY,
+        "user": user
+    }
+    return otp_store[key]["otp"]
+
 
 app = Flask(__name__)
 CORS(app)
@@ -14,7 +83,15 @@ CORS(app)
 loader.load_data()
 analyzer = Analyzer(loader)
 
-@app.route('/')
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/register")
+def register():
+    return render_template("register.html")
+
+@app.route('/dashboard')
 def dashboard():
     # Sanitize states: Remove numeric-only entries and N/A
     all_states = loader.enrolment_df['state'].unique().tolist()
@@ -350,6 +427,7 @@ def regional_analysis():
     
     response = gemini.chat_response(prompt, context=str(context_data))
     return jsonify({"analysis": response, "data": context_data})
+
 @app.route('/api/districts/<state_name>')
 def get_districts(state_name):
     districts = sorted(loader.enrolment_df[loader.enrolment_df['state'] == state_name]['district'].unique().tolist())
@@ -753,3 +831,266 @@ def export_global_dataset():
     fname = f"UIDAI_Filtered_Dataset_{state or 'All'}_{district or 'All'}.csv"
     return send_file(buffer, as_attachment=True, download_name=fname, mimetype='text/csv')
 
+# ---------------------------
+# Login Routes
+# ---------------------------
+@app.route("/auth/login/aadhaar", methods=["POST"])
+def login_aadhaar():
+    aadhaar = request.json.get("aadhaar")
+
+    users = requests.get(f"{MOCKAPI_BASE_URL}/login").json()
+    user = next((u for u in users if u.get("aadhaar") == aadhaar), None)
+
+    if not user:
+        return jsonify({"success": False, "message": "Aadhaar not registered"})
+
+    otp = save_otp(user["phone"], user)
+    send_sms(user["phone"], otp)
+
+    return jsonify({"success": True, "message": "OTP sent to registered mobile"})
+
+#login send mobile otp
+@app.route("/auth/login/mobile", methods=["POST"])
+def login_mobile():
+    phone = request.json.get("phone")
+
+    users = requests.get(f"{MOCKAPI_BASE_URL}/login").json()
+    user = next((u for u in users if u.get("phone") == phone), None)
+
+    if not user:
+        return jsonify({"success": False, "message": "Mobile not registered"})
+
+    otp = save_otp(phone, user)
+    send_sms(phone, otp)
+
+    return jsonify({"success": True, "message": "OTP sent to mobile"})
+
+
+#login email sendOtp
+
+@app.route("/auth/login/email", methods=["POST"])
+def login_email():
+    try:
+        email = request.json.get("email")
+        
+        if not email:
+            return jsonify({"success": False, "message": "Email required"}), 400
+
+        # Fetch users from MockAPI with error handling
+        response = requests.get(f"{MOCKAPI_BASE_URL}/login", timeout=5)
+        response.raise_for_status()
+        users = response.json()
+
+        # Case-insensitive email matching
+        user = next((u for u in users if u.get("email", "").lower() == email.lower()), None)
+
+        if not user:
+            return jsonify({"success": False, "message": "Email not registered"}), 404
+
+        # Generate and save OTP
+        otp = save_otp(email, user)
+        
+        # Send email
+        send_email(email, otp)
+
+        return jsonify({"success": True, "message": "OTP sent to email"}), 200
+        
+    except requests.RequestException as e:
+        print(f"MockAPI Error: {str(e)}")
+        return jsonify({"success": False, "message": "Service unavailable"}), 503
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"success": False, "message": "Internal server error"}), 500
+    
+# ---------------------------
+# Verify OTP (ONLY ONE)
+# ---------------------------
+@app.route("/auth/verify-otp", methods=["POST"])
+def verify_otp():
+    try:
+        otp = request.json.get("otp")
+
+        if not otp:
+            return jsonify({
+                "success": False,
+                "message": "OTP is required"
+            }), 400
+
+        for key, record in list(otp_store.items()):
+            if record["otp"] == otp:
+
+                # ❌ Expired
+                if time.time() > record["expires"]:
+                    otp_store.pop(key)
+                    return jsonify({
+                        "success": False,
+                        "message": "OTP expired"
+                    }), 400
+
+                user = record["user"]
+
+                # ✅ Save to MockAPI AFTER verification
+                url = f"{MOCKAPI_BASE_URL}/login"
+                
+                try:
+                    response = requests.get(url, timeout=5)
+                    response.raise_for_status()
+                    users = response.json()
+                except requests.RequestException:
+                    return jsonify({
+                        "success": False,
+                        "message": "Service unavailable"
+                    }), 503
+
+                # Check if user already exists (case-insensitive)
+                phone = user.get("phone", "")
+                email = user.get("email", "")
+                
+                existing = any(
+                    u.get("phone", "").lower() == phone.lower() or 
+                    u.get("email", "").lower() == email.lower() 
+                    for u in users
+                )
+                
+                if not existing:
+                    try:
+                        user_response = requests.post(url, json=user, timeout=5)
+                        user_response.raise_for_status()
+                        user = user_response.json()
+                    except requests.RequestException:
+                        return jsonify({
+                            "success": False,
+                            "message": "Failed to create user"
+                        }), 500
+
+                otp_store.pop(key)
+
+                return jsonify({
+                    "success": True,
+                    "message": "Registration successful",
+                    "user": user
+                }), 200
+
+        return jsonify({
+            "success": False,
+            "message": "Invalid OTP"
+        }), 400
+        
+    except Exception as e:
+        print(f"Error in verify_otp: {str(e)}")
+        return jsonify({
+            "success": False,
+            "message": "Internal server error"
+        }), 500
+
+
+@app.route("/auth/send-mobile-otp", methods=["POST"])
+def send_mobile_otp():
+    try:
+        data = request.json
+        phone = data.get("phone", "").strip()
+
+        if not phone:
+            return jsonify({
+                "success": False,
+                "message": "Mobile number is required"
+            }), 400
+
+        url = f"{MOCKAPI_BASE_URL}/login"
+        
+        try:
+            response = requests.get(url, timeout=5)
+            response.raise_for_status()
+            users = response.json()
+        except requests.RequestException:
+            return jsonify({
+                "success": False,
+                "message": "Service unavailable"
+            }), 503
+
+        # ❌ If already registered → error (case-insensitive)
+        if any(u.get("phone", "").lower() == phone.lower() for u in users):
+            return jsonify({
+                "success": False,
+                "message": "Mobile number already registered"
+            }), 409
+
+        # ✅ Create TEMP user (NOT saved)
+        temp_user = {
+            "name": data.get("name", "").strip(),
+            "email": data.get("email", "").strip(),
+            "phone": phone,
+            "aadhaar": data.get("aadhaar", "").strip()
+        }
+
+        # Generate & store OTP with temp user
+        otp = save_otp(phone, temp_user)
+        send_sms(phone, otp)
+
+        return jsonify({
+            "success": True,
+            "message": "OTP sent to mobile"
+        }), 200
+        
+    except Exception as e:
+        print(f"Error in send_mobile_otp: {str(e)}")
+        return jsonify({
+            "success": False,
+            "message": "Internal server error"
+        }), 500
+
+
+@app.route("/auth/send-email-otp", methods=["POST"])
+def send_email_otp():
+    try:
+        data = request.json
+        email = data.get("email", "").strip()
+
+        if not email:
+            return jsonify({
+                "success": False,
+                "message": "Email is required"
+            }), 400
+
+        url = f"{MOCKAPI_BASE_URL}/login"
+        
+        try:
+            response = requests.get(url, timeout=5)
+            response.raise_for_status()
+            users = response.json()
+        except requests.RequestException:
+            return jsonify({
+                "success": False,
+                "message": "Service unavailable"
+            }), 503
+
+        # ❌ If already registered → error (case-insensitive)
+        if any(u.get("email", "").lower() == email.lower() for u in users):
+            return jsonify({
+                "success": False,
+                "message": "Email already registered"
+            }), 409
+
+        # ✅ TEMP user (NOT saved yet)
+        temp_user = {
+            "name": data.get("name", "").strip(),
+            "email": email,
+            "phone": data.get("phone", "").strip(),
+            "aadhaar": data.get("aadhaar", "").strip()
+        }
+
+        # Generate & store OTP with temp user
+        otp = save_otp(email, temp_user)
+        send_email(email, otp)
+
+        return jsonify({
+            "success": True,
+            "message": "OTP sent to email"
+        }), 200
+        
+    except Exception as e:
+        print(f"Error in send_email_otp: {str(e)}")
+        return jsonify({
+            "success": False,
+            "message": "Internal server error"
+        }), 500

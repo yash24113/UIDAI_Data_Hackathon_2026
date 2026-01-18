@@ -1,0 +1,222 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Register - Create Account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='images/image.png') }}"
+      sizes="16x16"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../static/css/style.css" />
+    <link rel="stylesheet" href="../static/css/otp.css" />
+    <link rel="stylesheet" href="../static/css/message.css" />
+  </head>
+
+  <body>
+    <!-- Background particles -->
+    <div
+      class="particle"
+      style="
+        width: 60px;
+        height: 60px;
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+      "
+    ></div>
+    <div
+      class="particle"
+      style="
+        width: 40px;
+        height: 40px;
+        top: 20%;
+        right: 15%;
+        animation-delay: 2s;
+      "
+    ></div>
+    <div
+      class="particle"
+      style="
+        width: 80px;
+        height: 80px;
+        bottom: 15%;
+        left: 15%;
+        animation-delay: 4s;
+      "
+    ></div>
+    <div
+      class="particle"
+      style="
+        width: 50px;
+        height: 50px;
+        bottom: 20%;
+        right: 20%;
+        animation-delay: 6s;
+      "
+    ></div>
+
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+          <div class="register-card">
+            <!-- Logo -->
+            <div class="logo-container">
+              <div class="logo-icon">
+                <i class="fas fa-user-plus"></i>
+              </div>
+              <h4>Create Account</h4>
+              <p class="subtitle">Register to get started</p>
+            </div>
+
+            <!-- Full Name -->
+            <div class="input-group-custom">
+              <label>Full Name</label>
+              <div class="input-wrapper">
+                <i class="fas fa-user input-icon"></i>
+                <input
+                  class="form-control-custom"
+                  id="name"
+                  placeholder="Enter your full name"
+                  type="text"
+                />
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="input-group-custom">
+              <label>Email</label>
+              <div class="input-wrapper">
+                <i class="fas fa-envelope input-icon"></i>
+                <input
+                  class="form-control-custom"
+                  id="email"
+                  placeholder="Enter your email"
+                  type="email"
+                />
+              </div>
+            </div>
+
+            <!-- Mobile -->
+            <div class="input-group-custom">
+              <label>Mobile</label>
+              <div class="input-wrapper">
+                <i class="fas fa-mobile-alt input-icon"></i>
+                <input
+                  class="form-control-custom"
+                  id="mobile"
+                  placeholder="+91 Enter mobile number"
+                  type="tel"
+                />
+              </div>
+            </div>
+
+            <!-- Aadhaar -->
+            <div class="input-group-custom">
+              <label>Aadhaar</label>
+              <div class="input-wrapper">
+                <i class="fas fa-id-card input-icon"></i>
+                <input
+                  class="form-control-custom"
+                  id="aadhaar"
+                  maxlength="12"
+                  placeholder="Enter 12-digit Aadhaar"
+                  type="text"
+                />
+              </div>
+            </div>
+
+            <!-- OTP Method -->
+            <div class="input-group-custom">
+              <label>Send OTP Via</label>
+              <div class="input-wrapper">
+                <i class="fas fa-paper-plane input-icon"></i>
+                <select
+                  class="form-select-custom"
+                  id="otpMethod"
+                  onchange="toggleOtpMethod()"
+                >
+                  <option value="">Select method</option>
+                  <option value="mobile">Mobile</option>
+                  <option value="email">Email</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Send OTP to Mobile Button -->
+            <button
+              id="sendMobileOtpBtn"
+              class="btn-send-otp d-none"
+              onclick="sendMobileOTP()"
+            >
+              <i class="fas fa-mobile-alt"></i> Send OTP to Mobile
+            </button>
+
+            <!-- Send OTP to Email Button -->
+            <button
+              id="sendEmailOtpBtn"
+              class="btn-send-otp btn-email d-none"
+              onclick="sendEmailOTP()"
+            >
+              <i class="fas fa-envelope"></i> Send OTP to Email
+            </button>
+
+            <!-- OTP Input Box -->
+            <div id="otpBox" class="d-none">
+              <button class="btn-send-otp btn-verify" onclick="verifyOTP()">
+                <i class="fas fa-check-circle"></i> Verify OTP & Register
+              </button>
+            </div>
+
+            <!-- Login Link -->
+            <div class="login-link">Have an account? <a href="/">Login</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="msg" onclick="closeMsg()">
+      <i class="msg-icon"></i>
+      <span class="msg-content"></span>
+      <i class="fas fa-times msg-close"></i>
+    </div>
+
+    <!-- OTP Modal -->
+    <div id="otpModal" class="otp-modal">
+      <div class="otp-modal-content">
+        <div class="otp-modal-header">
+          <h3>Enter OTP</h3>
+          <p>We've sent a 6-digit code to your device</p>
+        </div>
+        <div class="otp-inputs">
+          <input type="text" class="otp-input" maxlength="1" id="otp1" />
+          <input type="text" class="otp-input" maxlength="1" id="otp2" />
+          <input type="text" class="otp-input" maxlength="1" id="otp3" />
+          <input type="text" class="otp-input" maxlength="1" id="otp4" />
+          <input type="text" class="otp-input" maxlength="1" id="otp5" />
+          <input type="text" class="otp-input" maxlength="1" id="otp6" />
+        </div>
+        <div class="otp-modal-actions">
+          <button class="btn-modal btn-verify-modal" onclick="verifyOTP()">
+            <i class="fas fa-check-circle"></i> Verify
+          </button>
+          <button class="btn-modal btn-cancel-modal" onclick="closeOTPModal()">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
+</html>

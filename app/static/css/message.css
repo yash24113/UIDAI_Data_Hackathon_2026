@@ -1,0 +1,97 @@
+/* Message Modal Styles */
+#msg {
+  display: none;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 400px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  animation: slideInRight 0.4s ease-out;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+#msg:hover {
+  transform: translateX(-5px);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+#msg.show {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#msg .msg-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+#msg .msg-content {
+  flex: 1;
+}
+
+#msg .msg-close {
+  font-size: 18px;
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+
+#msg .msg-close:hover {
+  opacity: 1;
+}
+
+/* Success Style */
+#msg.msg-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border-left: 4px solid #28a745;
+}
+
+/* Danger Style */
+#msg.msg-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
+
+/* Info Style */
+#msg.msg-info {
+  background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+  color: #0c5460;
+  border-left: 4px solid #17a2b8;
+}
+
+/* Warning Style */
+#msg.msg-warning {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  color: #856404;
+  border-left: 4px solid #ffc107;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  #msg {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
